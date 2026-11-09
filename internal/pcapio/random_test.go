@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
+	"strings"
 	"testing"
 )
 
@@ -112,8 +113,8 @@ func (f *failAfter) Read(p []byte) (int, error) {
 	return n, err
 }
 
-// TestDrainError: a read error at the end marks the tail truncated, so the
-// hash is known to cover only what was read.
+// TestDrainError: a read error of the input is damage, not the end of the
+// input: it wraps ErrCorrupt after the packets read before it.
 func TestDrainError(t *testing.T) {
 	var buf bytes.Buffer
 	w, _ := NewPcapWriter(&buf, PcapOptions{LinkType: 1})
@@ -126,10 +127,45 @@ func TestDrainError(t *testing.T) {
 	}
 	var p Packet
 	n := 0
-	for rd.Next(&p) == nil {
+	for err = rd.Next(&p); err == nil; err = rd.Next(&p) {
 		n++
 	}
-	if n != 1 || !rd.Counters().TruncatedTail {
-		t.Errorf("%d packets, counters %+v", n, rd.Counters())
+	if n != 1 || !errors.Is(err, ErrCorrupt) || !strings.Contains(err.Error(), "device gone") {
+		t.Errorf("%d packets, err %v", n, err)
+	}
+	if !errors.Is(rd.Next(&p), io.EOF) {
+		t.Error("Next after the error is not io.EOF")
+	}
+}
+
+// TestGzipDamage: a gzip stream whose checksum does not match wraps
+// ErrCorrupt; a gzip header that does not decode wraps ErrFormat.
+func TestGzipDamage(t *testing.T) {
+	var raw bytes.Buffer
+	w, _ := NewPcapWriter(&raw, PcapOptions{LinkType: 1})
+	_ = w.WritePacket(t0, 0, []byte("whole"))
+	_ = w.Flush()
+	var gz bytes.Buffer
+	zw := gzip.NewWriter(&gz)
+	_, _ = zw.Write(raw.Bytes())
+	_ = zw.Close()
+
+	bad := append([]byte(nil), gz.Bytes()...)
+	bad[len(bad)-8] ^= 0xff // CRC-32 of the trailer
+	rd, err := NewReader(bytes.NewReader(bad), Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var p Packet
+	for err = rd.Next(&p); err == nil; err = rd.Next(&p) {
+	}
+	if !errors.Is(err, ErrCorrupt) || !errors.Is(err, gzip.ErrChecksum) {
+		t.Errorf("checksum: err %v", err)
+	}
+
+	header := append([]byte(nil), gz.Bytes()...)
+	header[2] = 0 // compression method other than deflate
+	if _, err := NewReader(bytes.NewReader(header), Options{}); !errors.Is(err, ErrFormat) || !errors.Is(err, gzip.ErrHeader) {
+		t.Errorf("header: err %v", err)
 	}
 }

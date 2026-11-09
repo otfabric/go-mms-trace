@@ -1,5 +1,20 @@
 # go-mms-trace Releases
 
+## v0.1.2
+
+**Date:** 2026-11-10
+**Previous release:** v0.1.1
+
+### Fixed
+
+- **`mmstracectl` is built on library v0.1.1.** The v0.1.1 binaries still required library v0.1.0, so a read error after the file header and a gzip capture whose checksum does not match ended the read silently (exit 0). Now the command prints what was read and exits 3. The library is unchanged from v0.1.1.
+
+### Tests
+
+- `TestGzipChecksum` (`cmd/mmstracectl`) runs the command on a gzip capture with a broken checksum, so a pin of an older library fails the tests.
+
+---
+
 ## v0.1.1
 
 **Date:** 2026-11-10
@@ -7,7 +22,7 @@
 
 ### Fixed
 
-- **A read error of the input is reported.** A read error after the file header, and a gzip capture whose checksum or length does not match, ended the read like a cut-short file (`File.TruncatedTail`, no error). They now return the result so far with an error wrapping `ErrCorrupt` (`mmstracectl`: exit 3 after printing what was read).
+- **A read error of the input is reported.** A read error after the file header, and a gzip capture whose checksum or length does not match, ended the read like a cut-short file (`File.TruncatedTail`, no error). They now return the result so far with an error wrapping `ErrCorrupt`. The `mmstracectl` binaries of v0.1.1 were built on library v0.1.0 and do not have this fix; v0.1.2 does.
 - **An invalid gzip header wraps `ErrFormat`.** It returned the `compress/gzip` error, which wrapped neither sentinel (`mmstracectl` already exited 3).
 
 ### Documentation

@@ -33,7 +33,9 @@ A capture can come from anywhere, so every reader and decoder treats it as hosti
 - at most 100 000 tracked TCP connections and 64 MiB of out-of-order bytes (1 MiB per direction);
 - a TPKT at most 65 535 bytes by its format, a reassembled TSDU at most 16 MiB (`MaxTSDU`).
 
-A packet that does not decode is counted, never an error; only a damaged file ends the read (`ErrCorrupt`). The pcap and pcapng readers, the link parser and `trace.Analyze` are fuzzed (`make fuzz`). The result itself grows with the capture ([LIMITATIONS.md](LIMITATIONS.md)).
+A packet that does not decode is counted, never an error; only a damaged file ends the read (`ErrCorrupt`). The pcap and pcapng readers, the link parser and `trace.Analyze` are fuzzed (`make fuzz`, and 30 s per target in CI). TCP reassembly is fuzzed only through `trace.Analyze`.
+
+The result itself is not bounded: it grows with the number of transactions, reports and GOOSE messages in the capture ([LIMITATIONS.md](LIMITATIONS.md#memory)). An application that analyses captures from untrusted sources should bound the input size it accepts.
 
 ### Credentials are never decoded
 
@@ -41,7 +43,7 @@ The AARQ's authentication mechanism is reported (`none`, `password`, `other`); t
 
 ### Offline only
 
-The library never captures live, never opens a socket and never runs another program. `mmstracectl` reads files or standard input and writes standard output; nothing else.
+The library never captures live, never opens a socket and never runs another program (`depguard` and `forbidigo` in `.golangci.yml` reject such imports and calls outside tests). `mmstracectl` reads files or standard input and writes standard output and standard error; nothing else.
 
 ### Captures contain sensitive data
 

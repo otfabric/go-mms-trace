@@ -1,5 +1,21 @@
 # go-mms-trace Releases
 
+## v0.1.1
+
+**Date:** 2026-11-10
+**Previous release:** v0.1.0
+
+### Fixed
+
+- **A read error of the input is reported.** A read error after the file header, and a gzip capture whose checksum or length does not match, ended the read like a cut-short file (`File.TruncatedTail`, no error). They now return the result so far with an error wrapping `ErrCorrupt` (`mmstracectl`: exit 3 after printing what was read).
+- **An invalid gzip header wraps `ErrFormat`.** It returned the `compress/gzip` error, which wrapped neither sentinel (`mmstracectl` already exited 3).
+
+### Documentation
+
+- Every document checked against the code, the tests and the CLI: corrected claims (the SHA-256 covers the compressed bytes of a gzip capture; an association closes on a FIN in both directions; the CLI examples), the Wireshark comparison and the public captures scoped to what they show, and new [INTEROPERABILITY.md](INTEROPERABILITY.md), [OBSERVABILITY.md](OBSERVABILITY.md) and [docs/FEATURE-STATUS.md](docs/FEATURE-STATUS.md).
+
+---
+
 ## v0.1.0
 
 **Date:** 2026-11-09
@@ -11,14 +27,14 @@
 - `trace.ErrCorrupt` (damage ended the read; the result so far is returned) and `trace.ErrFormat` (not a capture).
 - `mmstracectl` with `info`, `associations`, `transactions` (alias `timeline`, filters `--service`, `--status`, `--assoc`), `reports`, `goose`, `sv` and `version`; `--format text|json|csv`, `--port`, `--max-packet`; `MMSTRACECTL_*` environment variables; shell completion; exit codes 0, 2, 3, 10 and 130.
 - 12 captures recorded between independent IEC 61850 stacks of otfabric/iec61850-interop (`testdata/captures/interop`, `scripts/record-interop.sh`): MMS, IEC 61850 client, reporter and controller sequences, GOOSE and Sampled Values; every frame decodes and every request is paired.
-- 75 public captures (ADSC Zeek MMS traces, ITI ICS-Security-Tools, QUT-ZSS-2023-MMS, ICS-Pcaps with ABB and Siemens IED sessions), with manifest, notices and checksums, held to their summaries by `TestPublicCaptures`.
-- `make compare-wireshark`: every MMS PDU of the interop and public captures is compared with Wireshark's dissector; all match.
+- 75 public captures (ADSC Zeek MMS traces, ITI ICS-Security-Tools, QUT-ZSS-2023-MMS, ICS-Pcaps with sessions whose MMS names show ABB and Siemens IED models), with manifest, notices and checksums, held to their summaries by `TestPublicCaptures`.
+- `make compare-wireshark`: the MMS PDUs of the interop and public captures are compared with Wireshark's dissector by kind, invoke ID and request service (PDUs of associations captured midstream are not compared); all captures match.
 - Counters `BareMMS` (MMS straight in COTP, decoded as Wireshark does) and `TSOSegments` (IPv4 total length 0 from segmentation offload, taken at the captured length); `Transaction.ServerRequest` (a request the server sent, as in ObtainFile).
 - Fuzz targets `FuzzAnalyze`, `FuzzPcapReader`, `FuzzPcapngReader` and `FuzzLinkIPTCP`.
 
 ### Known limitations
 
 - MMS over TLS is not decodable; only TCP port 102 is searched by default.
-- Captures of real devices come from public sources only: MMS sessions with ABB and Siemens IEDs and an OMICRON IEDScout session (ICS-Pcaps), traces from the EPIC testbed (ADSC) and community captures (ITI). Their device firmware and capture dates are not documented. All of them, and the captures between independent stacks (libiec61850, iec61850bean, dscsystems, iec61850-rust, cB-Sigma), decode and match Wireshark's dissector; captures of current devices with documented firmware are still to be added ([LIMITATIONS.md](LIMITATIONS.md), [TESTING.md](TESTING.md)).
+- Captures of real devices come from public sources only: MMS sessions whose names show ABB and Siemens IED models and a capture named `iedscout.pcap` (ICS-Pcaps), traces from the EPIC testbed (ADSC) and community captures (ITI). Their device firmware and capture dates are not documented. They and the captures between independent stacks (libiec61850, iec61850bean, dscsystems, iec61850-rust, cB-Sigma) match Wireshark's dissector on the compared fields, except that PDUs of associations captured midstream (all of `iedscout.pcap`) are not compared; captures of current devices with documented firmware are still to be added ([LIMITATIONS.md](LIMITATIONS.md), [INTEROPERABILITY.md](INTEROPERABILITY.md)).
 
 ---

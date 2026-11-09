@@ -19,6 +19,8 @@ MMS is decoded by [go-mms](https://github.com/otfabric/go-mms) (`mms.DecodeTSDU`
 
 Offline only: the library never captures live and never sends anything. Pure Go, no cgo, no libpcap. What it cannot do is in [LIMITATIONS.md](LIMITATIONS.md).
 
+Status: tested in CI on generated captures, on captures recorded between independent IEC 61850 stacks (libiec61850, iec61850bean, dscsystems, iec61850-rust, cB-Sigma) and on public captures; the MMS PDUs of those captures were compared with Wireshark's dissector by hand. What each feature's evidence is: [docs/FEATURE-STATUS.md](docs/FEATURE-STATUS.md).
+
 ## mmstracectl
 
 ### Install mmstracectl
@@ -47,17 +49,17 @@ Contributors build it from a checkout with `make build` (`./bin/mmstracectl`).
 | `sv CAPTURE...` | the Sampled Values streams with lost and repeated samples |
 | `version` | version, tag, commit, build date, libraries, Go version and platform |
 
-`--format` is `text` (default), `json` (one document per command) or `csv` (`transactions`, `reports`, `goose`, `sv`). `--port` sets the MMS server ports (default 102). Several captures are analysed one by one; `-` reads standard input. Every flag can be set as `MMSTRACECTL_<FLAG>`. Exit codes: 0 success, 2 usage, 3 invalid input (also a damaged capture, after printing what was read), 10 output or internal error, 130 interrupted. Details: [cmd/mmstracectl/README.md](cmd/mmstracectl/README.md).
+`--format` is `text` (default), `json` (one document per command) or `csv` (`transactions`, `reports`, `goose`, `sv`). `--port` sets the MMS server ports (default 102). Several captures are analysed one by one; `-` reads standard input. Output starts once every capture has been read to its end. Every flag can be set as `MMSTRACECTL_<FLAG>`. Exit codes: 0 success, 2 usage, 3 invalid input (also a damaged capture, after printing what was read), 10 output or internal error, 130 interrupted. Details: [cmd/mmstracectl/README.md](cmd/mmstracectl/README.md).
 
 ```sh
-# What is in this capture?
-mmstracectl info substation.pcapng
+# What is in this capture? (testdata/substation.pcap is the generated fixture of a checkout)
+mmstracectl info testdata/substation.pcap
 
 # Every failed or unanswered service of association 3.
-mmstracectl transactions substation.pcapng --assoc 3 --status error,reject,unanswered
+mmstracectl transactions testdata/substation.pcap --assoc 3 --status error,reject,unanswered
 
 # The GOOSE streams as CSV.
-mmstracectl goose substation.pcapng --format csv > goose.csv
+mmstracectl goose testdata/substation.pcap --format csv > goose.csv
 ```
 
 ### Shell completion
@@ -119,7 +121,7 @@ func main() {
 }
 ```
 
-`trace.Analyze` reads the whole capture and returns a `trace.Result`. A damaged file returns what was read before the damage together with an error wrapping `trace.ErrCorrupt`. The transactions keep the decoded PDUs (`mms.CapturedPDU`) of their request and response. The API is in [API.md](API.md).
+`trace.Analyze` reads the whole capture and returns a `trace.Result`; there is no streaming API. A damaged file returns what was read before the damage together with an error wrapping `trace.ErrCorrupt`. The transactions keep the decoded PDUs (`mms.CapturedPDU`) of their request and response. The API is in [API.md](API.md).
 
 ## Documentation
 
@@ -128,9 +130,13 @@ func main() {
 | [API.md](API.md) | The `trace` package |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | The pipeline and its limits |
 | [ERRORS.md](ERRORS.md) | Errors and counters |
+| [OBSERVABILITY.md](OBSERVABILITY.md) | No logs or hooks; where the stats fields are |
 | [LIMITATIONS.md](LIMITATIONS.md) | What is not decoded or not proven yet |
+| [docs/FEATURE-STATUS.md](docs/FEATURE-STATUS.md) | Each feature and its evidence level |
+| [INTEROPERABILITY.md](INTEROPERABILITY.md) | Captures between independent stacks, public captures, the Wireshark comparison |
 | [SECURITY.md](SECURITY.md) | Reporting, untrusted input |
-| [TESTING.md](TESTING.md) | Fixtures, golden files, fuzzing |
+| [AGENTS.md](AGENTS.md) | Settled decisions and rules, for contributors and agents |
+| [TESTING.md](TESTING.md) | Generated fixtures, golden files, fuzzing, coverage, CI |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Setup and rules |
 | [RELEASE.md](RELEASE.md) | Release notes |
 | [cmd/mmstracectl/README.md](cmd/mmstracectl/README.md) | The CLI |

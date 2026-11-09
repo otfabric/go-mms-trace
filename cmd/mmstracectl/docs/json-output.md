@@ -6,7 +6,7 @@
 {"schema_version": 1, "files": [ ... ]}
 ```
 
-with one object per capture, in argument order. Each starts with `file` (the argument as given, `-` for standard input) and, for a damaged capture, `error` (what ended the read; the rest is what was read before it). Field names are snake_case and stable; a change is called out in the release notes. Times are RFC 3339 with nanoseconds, UTC, and absent when the capture has no time. Endpoints are `ip:port` (IPv6 in brackets).
+with one object per capture, in argument order. Each starts with `file` (the argument as given, `-` for standard input) and, for a damaged capture, `error` (what ended the read; the rest is what was read before it). Field names are snake_case and stable; a change is called out in the release notes. Times are RFC 3339 in UTC with up to nine fractional digits (trailing zeros dropped, as Go's `time.RFC3339Nano` writes them), and absent when there is no time. Endpoints are `ip:port` (IPv6 in brackets).
 
 ## `info`
 
@@ -17,15 +17,15 @@ with one object per capture, in argument order. Each starts with `file` (the arg
   "first": "2026-11-09T12:00:00.001Z", "last": "2026-11-09T12:00:00.061Z",
   "truncated_tail": false, "skipped_blocks": 0,
   "associations": 4, "transactions": 9,
-  "statuses": {"ok": 5, "error": 1, "unanswered": 1, "orphan": 1, "pending": 1},
+  "statuses": {"error": 1, "ok": 5, "orphan": 1, "pending": 1, "unanswered": 1},
   "reports": 1, "goose_streams": 1, "sv_streams": 1,
   "counters": {"tpkt_resync": 0, "cotp_errors": 0, "tsdu_errors": 0, "bare_mms": 0, "tso_segments": 0, "goose_errors": 0, "sv_errors": 0},
-  "services": {"Read": 5, "Write": 1},
+  "services": {"FileDelete": 1, "GetNameList": 1, "Identify": 1, "Read": 5, "Write": 1},
   "unsupported": {"other_tcp": 1}
 }
 ```
 
-`statuses` and `services` count the transactions; `unsupported` counts packets without a usable TCP segment by reason, and `other_tcp` segments on other ports. The counters are explained in [ERRORS.md](../../../ERRORS.md).
+`statuses` and `services` count the transactions (a status with no transaction is absent; `services` has `""` for orphan errors and rejects); `unsupported` counts packets without a usable TCP segment by reason, and `other_tcp` segments on other ports. `links`, `statuses`, `services` and `unsupported` are present even when empty. The counters are explained in [ERRORS.md](../../../ERRORS.md).
 
 ## `associations`
 
@@ -51,7 +51,7 @@ with one object per capture, in argument order. Each starts with `file` (the arg
 }]}
 ```
 
-In time order: `time` is the request's, or the response's when the request was not captured. `status` is `ok`, `error`, `reject`, `unanswered`, `orphan` or `pending`. `latency_ms` is `null` without both times. `request_frame` and `response_frame` are packet numbers from 1, absent when not captured. `error` (class and code of a confirmed error) and `reject` (`type` and `reason` of a reject PDU) are present only then. `object` is described in the [README](../README.md#output).
+In time order (capture order for equal times): `time` is the request's, or the response's when the request was not captured; absent without either. `service` is the request's, or the response's for an orphan (`""` when it names none). `status` is `ok`, `error`, `reject`, `unanswered`, `orphan` or `pending`. `latency_ms` is a number of milliseconds with fractions, `null` without both times. `request_frame` and `response_frame` are packet numbers from 1, absent when not captured. `error` (class and code of a confirmed error) and `reject` (`type` and `reason` of a reject PDU) are present only then. `object` is described in the [README](../README.md#output).
 
 ## `reports`
 
@@ -95,7 +95,7 @@ In time order: `time` is the request's, or the response's when the request was n
 One line, the organisation's version document:
 
 ```json
-{"name":"mmstracectl","version":"0.1.0","tag":"v0.1.0","commit":"...","built":"...","libraries":[{"name":"go-mms","version":"1.6.0"}],"go":"go1.26.0","platform":"linux/amd64"}
+{"name":"mmstracectl","version":"0.1.0","tag":"v0.1.0","commit":"...","built":"...","libraries":[{"name":"go-cotp","version":"1.3.0"},{"name":"go-iec61850","version":"1.15.2"},{"name":"go-mms","version":"1.7.1"},{"name":"go-tpkt","version":"1.1.0"}],"go":"go1.26.0","platform":"linux/amd64"}
 ```
 
-`libraries` are the OT Fabric libraries the binary is built on (without go-mms-trace itself).
+`libraries` are the `github.com/otfabric/go-*` modules the binary is built with, sorted by name, without go-mms-trace itself; the versions above are those of `cmd/mmstracectl/go.mod` at the time of writing. A binary built without injected values reports `dev` (or the module version of `go install ...@vX.Y.Z`), the VCS revision as commit, and `unknown` for what it cannot tell.

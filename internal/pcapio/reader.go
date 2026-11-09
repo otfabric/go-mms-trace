@@ -176,7 +176,7 @@ func NewReader(r io.Reader, opts Options) (*Reader, error) {
 	if head[0] == 0x1f && head[1] == 0x8b {
 		zr, err := gzip.NewReader(rd.r)
 		if err != nil {
-			return nil, fmt.Errorf("gzip: %w", err)
+			return nil, fmt.Errorf("%w: gzip: %w", ErrFormat, err)
 		}
 		zr.Multistream(true)
 		rd.r = bufio.NewReaderSize(zr, 256<<10)
@@ -239,8 +239,22 @@ func (rd *Reader) data(n int) ([]byte, error) {
 	return b, rd.read(b)
 }
 
+// end ends the read after err from a read of the input. The end of the
+// input is io.EOF (TruncatedTail when it came inside a record or block,
+// inside says whether the read started inside one); any other error, a
+// failed read or a gzip stream whose checksum does not match, wraps
+// ErrCorrupt.
+func (rd *Reader) end(err error, inside bool) error {
+	if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
+		return rd.eof(inside || errors.Is(err, io.ErrUnexpectedEOF))
+	}
+	rd.done = true
+	return fmt.Errorf("%w: reading at offset %d: %w", ErrCorrupt, rd.off, err)
+}
+
 // eof ends the read at the end of the input: it drains what is left so
-// that the hash covers the whole input.
+// that the hash covers the whole input. A read error while draining wraps
+// ErrCorrupt.
 func (rd *Reader) eof(truncated bool) error {
 	if truncated {
 		rd.c.TruncatedTail = true
@@ -248,7 +262,7 @@ func (rd *Reader) eof(truncated bool) error {
 	if !rd.done {
 		rd.done = true
 		if _, err := io.Copy(io.Discard, rd.src); err != nil {
-			rd.c.TruncatedTail = true // the hash then covers only what was read
+			return fmt.Errorf("%w: reading after offset %d: %w", ErrCorrupt, rd.off, err)
 		}
 	}
 	return io.EOF
@@ -292,7 +306,7 @@ func (rd *Reader) Next(p *Packet) error {
 	h := rd.hdr[:16]
 	start := rd.off
 	if err := rd.read(h); err != nil {
-		return rd.eof(errors.Is(err, io.ErrUnexpectedEOF))
+		return rd.end(err, false)
 	}
 	capLen, origLen := rd.bo.Uint32(h[8:]), rd.bo.Uint32(h[12:])
 	if capLen > uint32(rd.opts.MaxPacket) {
@@ -301,7 +315,7 @@ func (rd *Reader) Next(p *Packet) error {
 	}
 	d, err := rd.data(int(capLen))
 	if err != nil {
-		return rd.eof(true)
+		return rd.end(err, true)
 	}
 	sub := int64(rd.bo.Uint32(h[4:]))
 	if !rd.nanos {
@@ -337,7 +351,7 @@ func (rd *Reader) nextNG(p *Packet) error {
 		start := rd.off
 		h := rd.hdr[:12]
 		if err := rd.read(h[:8]); err != nil {
-			return rd.eof(errors.Is(err, io.ErrUnexpectedEOF))
+			return rd.end(err, false)
 		}
 		if binary.LittleEndian.Uint32(h) == blockSHB {
 			if err := rd.section(start, h); err != nil {
@@ -356,7 +370,7 @@ func (rd *Reader) nextNG(p *Packet) error {
 		}
 		block, err := rd.data(int(n) - 8)
 		if err != nil {
-			return rd.eof(true)
+			return rd.end(err, true)
 		}
 		if rd.bo.Uint32(block[len(block)-4:]) != n {
 			rd.c.SkippedBlocks++ // the trailing length disagrees: damaged
@@ -389,7 +403,7 @@ func (rd *Reader) nextNG(p *Packet) error {
 
 func (rd *Reader) section(start int64, h []byte) error {
 	if err := rd.read(h[8:12]); err != nil {
-		return rd.eof(true)
+		return rd.end(err, true)
 	}
 	var bo binary.ByteOrder
 	switch binary.LittleEndian.Uint32(h[8:]) {
@@ -408,7 +422,7 @@ func (rd *Reader) section(start int64, h []byte) error {
 	}
 	block, err := rd.data(int(n) - 12)
 	if err != nil {
-		return rd.eof(true)
+		return rd.end(err, true)
 	}
 	rd.bo = bo
 	rd.secBase = len(rd.ifaces)

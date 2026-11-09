@@ -26,8 +26,10 @@ type Result struct {
 
 // File describes the capture file.
 type File struct {
-	Format     string // "pcap" or "pcapng"
-	Gzip       bool
+	Format string // "pcap" or "pcapng"
+	Gzip   bool
+	// SHA256 is the hex SHA-256 of the input as read (the compressed
+	// bytes for gzip).
 	SHA256     string
 	Packets    uint64
 	Interfaces int
@@ -37,7 +39,8 @@ type File struct {
 	// InputBytes is the size of the file as read (before decompression).
 	InputBytes int64
 	// TruncatedTail says the last record was cut short: the file ends in
-	// the middle of a packet, which is dropped without an error.
+	// the middle of a packet, which is dropped without an error. A read
+	// error of the input is not truncation: it wraps ErrCorrupt.
 	TruncatedTail bool
 	// SkippedBlocks counts damaged pcapng blocks with a plausible length
 	// that were skipped.
@@ -54,8 +57,9 @@ type Counters struct {
 	// TPKTResync counts bytes skipped to find the next TPKT header after
 	// a gap or garbage.
 	TPKTResync uint64
-	// COTPErrors counts TPDUs that did not decode, TSDUErrors units that
-	// did not decode as MMS.
+	// COTPErrors counts TPDUs that did not decode, TSDUErrors TSDUs that
+	// did not decode (session, presentation, ACSE or MMS) or exceeded
+	// MaxTSDU.
 	COTPErrors, TSDUErrors uint64
 	// BareMMS counts MMS PDUs carried straight in COTP, without the
 	// session and presentation layers (not IEC 61850-8-1; some tools send
@@ -80,8 +84,9 @@ type Association struct {
 	// "connect" (COTP CR captured, no AARQ) or "midstream".
 	Open string
 	// Close says how it ended: "conclude", "release", "abort",
-	// "disconnect" (COTP or TCP close without MMS conclude), "reset"
-	// or "" (still open at the end of the trace).
+	// "disconnect" (COTP DR or DC, or TCP FIN in both directions, without
+	// MMS conclude), "reset" (TCP RST) or "" (not seen ending: still open
+	// at the end of the trace, evicted or superseded).
 	Close string
 	// Accepted is the AARE's result: nil when not captured.
 	Accepted *bool
@@ -97,8 +102,9 @@ type Association struct {
 	Transactions    int
 	Reports         int
 	Unanswered      int
-	// Gaps counts holes in either direction's byte stream (lost or not
-	// captured segments); an MMS PDU in a hole is not seen.
+	// Gaps counts skipped ranges of either direction's byte stream (not
+	// captured, cut by the snap length, or dropped by a reassembly
+	// limit); an MMS PDU in a skipped range is not seen.
 	Gaps int
 }
 
@@ -107,7 +113,7 @@ const (
 	StatusOK         = "ok"
 	StatusError      = "error"      // a confirmed error
 	StatusReject     = "reject"     // a reject PDU naming the invoke ID
-	StatusUnanswered = "unanswered" // no response before the association ended
+	StatusUnanswered = "unanswered" // no response before the association ended or the invoke ID was reused
 	StatusOrphan     = "orphan"     // a response whose request was not captured
 	StatusPending    = "pending"    // no response before the capture ended
 )

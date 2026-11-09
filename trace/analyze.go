@@ -40,7 +40,7 @@ var maxTSDU = MaxTSDU
 type Options struct {
 	// Ports are the server TCP ports of MMS; nil is DefaultPorts.
 	Ports []uint16
-	// MaxPacket bounds a packet record; zero is the reader's default.
+	// MaxPacket bounds a packet record; zero or negative is 256 KiB.
 	MaxPacket int
 }
 

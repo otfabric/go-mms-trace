@@ -279,6 +279,15 @@ func recordReport(t *testing.T) []unit {
 		t.Fatal(err)
 	}
 	c.OnInformationReport(func(*mms.InformationReportIndication) { got <- struct{}{} })
+	// Dial returns when the client has the AARE; the server registers the
+	// connection after sending it. A broadcast before that reaches nobody.
+	for len(srv.Connections()) == 0 {
+		select {
+		case <-ctx.Done():
+			t.Fatal("the server never registered the association")
+		case <-time.After(5 * time.Millisecond):
+		}
+	}
 	name := mms.ObjectName{Scope: mms.ObjectScopeDomain, Domain: "LD0", ItemID: "LLN0$RP$urcb"}
 	if err := srv.Broadcast(ctx, &mms.InformationReportRequest{Variables: []mms.ObjectName{name}, Values: []*mms.Value{mms.NewInteger(1)}}); err != nil {
 		t.Fatal(err)

@@ -1,5 +1,21 @@
 # go-mms-trace Releases
 
+## v0.1.1
+
+**Date:** 2026-11-10
+**Previous release:** v0.1.0
+
+### Fixed
+
+- **A read error of the input is reported.** A read error after the file header, and a gzip capture whose checksum or length does not match, ended the read like a cut-short file (`File.TruncatedTail`, no error). They now return the result so far with an error wrapping `ErrCorrupt` (`mmstracectl`: exit 3 after printing what was read).
+- **An invalid gzip header wraps `ErrFormat`.** It returned the `compress/gzip` error, which wrapped neither sentinel (`mmstracectl` already exited 3).
+
+### Documentation
+
+- Every document checked against the code, the tests and the CLI: corrected claims (the SHA-256 covers the compressed bytes of a gzip capture; an association closes on a FIN in both directions; the CLI examples), the Wireshark comparison and the public captures scoped to what they show, and new [INTEROPERABILITY.md](INTEROPERABILITY.md), [OBSERVABILITY.md](OBSERVABILITY.md) and [docs/FEATURE-STATUS.md](docs/FEATURE-STATUS.md).
+
+---
+
 ## v0.1.0
 
 **Date:** 2026-11-09

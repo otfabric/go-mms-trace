@@ -19,6 +19,6 @@
 ### Known limitations
 
 - MMS over TLS is not decodable; only TCP port 102 is searched by default.
-- No captures of real devices yet; the captures between independent stacks (libiec61850, iec61850bean, dscsystems, iec61850-rust, cB-Sigma) decode completely ([LIMITATIONS.md](LIMITATIONS.md), [TESTING.md](TESTING.md)).
+- Captures of real devices come from public sources only: MMS sessions with ABB and Siemens IEDs and an OMICRON IEDScout session (ICS-Pcaps), traces from the EPIC testbed (ADSC) and community captures (ITI). Their device firmware and capture dates are not documented. All of them, and the captures between independent stacks (libiec61850, iec61850bean, dscsystems, iec61850-rust, cB-Sigma), decode and match Wireshark's dissector; captures of current devices with documented firmware are still to be added ([LIMITATIONS.md](LIMITATIONS.md), [TESTING.md](TESTING.md)).
 
 ---

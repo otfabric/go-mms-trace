@@ -18,8 +18,7 @@ What go-mms-trace does not do, or has not proven yet.
 
 ## Evidence
 
-- **Few captures of real devices.** Besides the generated fixtures and the captures between independent stacks (`testdata/captures/interop`), the public captures include MMS sessions with ABB and Siemens IEDs and an OMICRON IEDScout session of unknown origin and date (`testdata/captures/public`, ICS-Pcaps); every MMS PDU of all of them matches Wireshark's dissector. Captures of current devices with documented firmware are still to be added.
-- **No comparison with Wireshark's dissector yet.**
+- **Real devices only through public captures.** Besides the generated fixtures and the captures between independent stacks (`testdata/captures/interop`), the 75 public captures (`testdata/captures/public`) include MMS sessions with ABB and Siemens IEDs and an OMICRON IEDScout session (ICS-Pcaps), traces from the EPIC testbed (ADSC) and community captures (ITI); their device firmware and capture dates are not documented. Every MMS PDU of all of them matches Wireshark's dissector (`make compare-wireshark`, [TESTING.md](TESTING.md)). Captures of current devices with documented firmware are still to be added.
 
 ## Dependencies
 

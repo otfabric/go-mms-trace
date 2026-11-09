@@ -1,7 +1,7 @@
 github.com/otfabric/go-cotp v1.3.0 h1:IXfqzdt86GPg6+il9g2GIWLFFmtNuVBMiE2ceLrXJpo=
 github.com/otfabric/go-cotp v1.3.0/go.mod h1:0XVoeSHnOPj8XWI484tUC2U6dbaKCtVk0z18MipM37s=
-github.com/otfabric/go-iec61850 v1.15.0 h1:eoNbAx1qCF8+r7IeQ4ovUFZQEAWQWVLq8mWk0uEVZRU=
-github.com/otfabric/go-iec61850 v1.15.0/go.mod h1:NEr4IkWGxCeHJgENVjmse6cV+BakfjFJmnhiPp3bHRI=
+github.com/otfabric/go-iec61850 v1.15.2 h1:V/2hqKz3+zIMe5C5yj9FDu9XaeGGeCMPHbQyMccuvBo=
+github.com/otfabric/go-iec61850 v1.15.2/go.mod h1:5yMecWO7sX3Rmlw8yiZPdzIcEv1HQau5IvKbDxWjkdQ=
 github.com/otfabric/go-mms v1.7.1 h1:YwqxCavFofDW/MXVsqm+7sClqKC74HVCMIVNZiyC8SE=
 github.com/otfabric/go-mms v1.7.1/go.mod h1:jnTh0K95bqNCQtdTBkBG/rMmGPeooYoABQa9Sqq3Zio=
 github.com/otfabric/go-tpkt v1.1.0 h1:KTCQePVqqnvDB0A3O4ReRqfa5jJ3jnsEYNUdS91vD4o=

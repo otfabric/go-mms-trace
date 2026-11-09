@@ -12,7 +12,7 @@ require (
 require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/otfabric/go-cotp v1.3.0 // indirect
-	github.com/otfabric/go-iec61850 v1.15.0 // indirect
+	github.com/otfabric/go-iec61850 v1.15.2 // indirect
 	github.com/otfabric/go-tpkt v1.1.0 // indirect
 	golang.org/x/sys v0.44.0 // indirect
 )

@@ -4,6 +4,7 @@ package main
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/csv"
 	"encoding/json"
@@ -72,6 +73,26 @@ func TestExitCodes(t *testing.T) {
 		if code == exitInvalidInput && tc.args[len(tc.args)-1] != damagedCap && out != "" {
 			t.Errorf("%v: output before an input error: %q", tc.args, out)
 		}
+	}
+}
+
+// TestGzipChecksum: a gzip capture whose checksum does not match is damage
+// (go-mms-trace v0.1.1): what was read is printed, then exit 3. It fails
+// when the module pins a library older than the fix.
+func TestGzipChecksum(t *testing.T) {
+	var gz bytes.Buffer
+	zw := gzip.NewWriter(&gz)
+	_, _ = zw.Write(readFixture(t))
+	_ = zw.Close()
+	b := gz.Bytes()
+	b[len(b)-8] ^= 0xff // CRC-32 of the trailer
+	path := filepath.Join(t.TempDir(), "bad.pcap.gz")
+	if err := os.WriteFile(path, b, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	code, out, errs := cli(t, nil, "info", path)
+	if code != exitInvalidInput || !strings.Contains(errs, "checksum") || out == "" {
+		t.Errorf("exit %d, stdout %d bytes, stderr %q", code, len(out), errs)
 	}
 }
 

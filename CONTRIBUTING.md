@@ -6,9 +6,9 @@ Thank you for your interest in contributing. Read [`AGENTS.md`](AGENTS.md) first
 
 ### Prerequisites
 
-- Go 1.26+ (see [go.mod](go.mod)); CI and releases build with the current stable Go
+- Go 1.26+ (see [go.mod](go.mod)); CI tests on Go 1.26 and 1.27 (`go-versions` in [ci.yml](.github/workflows/ci.yml))
 - [staticcheck](https://staticcheck.dev/), [golangci-lint](https://golangci-lint.run/) v2 and [govulncheck](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck) for the checks
-- No privileges and no real captures: the tests record go-mms associations on 127.0.0.1 and build their captures ([TESTING.md](TESTING.md))
+- No privileges and nothing outside the repository: the tests record go-mms associations on 127.0.0.1 and build their captures, and read the committed captures ([TESTING.md](TESTING.md)); `tshark`, Python 3 and Docker only for the optional targets listed there
 
 ### Build & Test
 
@@ -29,9 +29,9 @@ Run `make` (or `make help`) for the full list of targets.
 
 - **Offline only.** The library never captures live, never opens a socket and never reads the wall clock for anything it outputs. `depguard` and `forbidigo` enforce it for non-test code.
 - **Pure Go**, `CGO_ENABLED=0`, on every target in the Makefile's `TARGETS`.
-- **Bounded buffers**: every buffer of the pipeline has a cap and a counter ([ARCHITECTURE.md](ARCHITECTURE.md) section 2).
+- **Bounded buffers**: every buffer of the pipeline has a cap, and what it drops is counted, reported as a gap, or listed in [LIMITATIONS.md](LIMITATIONS.md) ([ARCHITECTURE.md](ARCHITECTURE.md#2-limits)).
 - **Hostile input:** readers and decoders never panic and never allocate beyond their limits; a new parser comes with a fuzz target.
-- **No customer captures** in the repository, ever.
+- **No customer captures** in the repository, ever. Public captures come with their source, commit, licence and checksum in `testdata/captures/public/manifest.json` and `NOTICE.md`.
 - **Docs in the same change:** if a document is wrong, fix it in the same pull request.
 
 ## Pull Requests

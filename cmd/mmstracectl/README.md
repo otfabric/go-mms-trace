@@ -4,7 +4,7 @@
 
 Install it with the one-line installer: see [Install mmstracectl](../../README.md#install-mmstracectl). Contributors build it from a checkout of go-mms-trace with `make build` (`./bin/mmstracectl`).
 
-During development `go.mod` replaces the library with the checkout (`replace github.com/otfabric/go-mms-trace => ../..`). At release that line is replaced by a version pin of the released library, as `cmd/mbtracectl` pins go-modbus-trace.
+`go.mod` pins the released library (go-mms-trace v0.1.0), as `cmd/mbtracectl` pins go-modbus-trace, so a release of the CLI builds on a released library. To work on both at once, use a `go.work` in the checkout (git-ignored).
 
 ## Commands
 

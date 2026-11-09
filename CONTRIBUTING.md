@@ -23,7 +23,7 @@ Run `make` (or `make help`) for the full list of targets.
 
 ### The CLI module
 
-`cmd/mmstracectl` is a nested module. During development its `go.mod` has `replace github.com/otfabric/go-mms-trace => ../..`; at release that line is replaced by a version pin of the library (as `cmd/mbtracectl` pins go-modbus-trace), so a release of the CLI builds on a released library. `make mod-check` checks the library's `go.mod` only.
+`cmd/mmstracectl` is a nested module. Its `go.mod` pins a released version of the library (as `cmd/mbtracectl` pins go-modbus-trace), so a release of the CLI builds on a released library; to change both at once, use a `go.work` (git-ignored) and bump the pin after the library's release. `make mod-check` checks the library's `go.mod` only.
 
 ## Rules
 

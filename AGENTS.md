@@ -23,7 +23,7 @@ A pure-Go library and CLI that read **packet captures** (pcap and pcapng, plain 
 - **The only clock is the capture's timestamps.** No `time.Now` in the library.
 - **Untrusted input.** Every length is bounded, the readers and `Analyze` are fuzzed, a packet that does not decode is counted, never a panic or an error.
 - **Credentials are never decoded**: only the authentication mechanism.
-- **The CLI is a nested module** (`cmd/mmstracectl`, its own `go.mod`), so the library does not depend on cobra. Its `replace ../..` is for development only and becomes a version pin at release.
+- **The CLI is a nested module** (`cmd/mmstracectl`, its own `go.mod`), so the library does not depend on cobra. It pins a released version of the library; a `go.work` (git-ignored) joins them during development.
 
 ## Hard rules
 

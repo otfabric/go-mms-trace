@@ -1,0 +1,12 @@
+# Codecov configuration for go-mms-trace.
+# CI uploads one whole-module profile (the organisation's go-ci.yml), measured
+# like make coverage (go test -coverpkg=./... ./...).
+coverage:
+  status:
+    project:
+      default:
+        target: 85%
+        threshold: 1%
+    patch:
+      default:
+        target: 70%

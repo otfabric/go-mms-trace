@@ -1,0 +1,2 @@
+SRC                APPID   VLAN  GOCBREF               MESSAGES  CHANGES  MAX/S  ISSUES
+02:00:00:00:00:09  0x0001  -     IED1LD0/LLN0$GO$gcb1  6         2        6      repeated (stNum, sqNum)=1, stNum jumped=1

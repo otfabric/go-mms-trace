@@ -1,0 +1,6 @@
+{"operation":"get-rcb","target":"InteropIEDInteropLD/LLN0.RP.urcb01","ok":true,"rptID":"interop_urcb01","rptEna":false}
+{"operation":"enable-rcb","target":"InteropIEDInteropLD/LLN0.RP.urcb01","ok":true}
+{"operation":"trigger-gi","target":"InteropIEDInteropLD/LLN0.RP.urcb01","ok":true}
+{"operation":"receive-report","ok":true,"rptID":"interop_urcb01","seqNum":0,"inclusion":[true,true],"values":[false,1],"reasons":["gi","gi"]}
+{"operation":"disable-rcb","target":"InteropIEDInteropLD/LLN0.RP.urcb01","ok":true}
+{"operation":"conclude","ok":true}

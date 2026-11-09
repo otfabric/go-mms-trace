@@ -1,0 +1,42 @@
+name: Release
+
+run-name: Release (${{ inputs.bump }}) from ${{ github.ref_name }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Version bump type
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release-package:
+    uses: otfabric/.github/.github/workflows/go-package-release.yml@v3.6.0
+    with:
+      bump: ${{ inputs.bump }}
+      release-name-prefix: go-mms-trace
+      update-major-tag: false
+    secrets: inherit
+
+  release-mmstracectl-binary:
+    needs: release-package
+    uses: otfabric/.github/.github/workflows/go-binary-release.yml@v3.6.0
+    with:
+      bump: none
+      binary-name: mmstracectl
+      module-dir: cmd/mmstracectl
+      main-path: .
+      ldflags: "-s -w -X main.version=${VERSION} -X main.tag=${TAG} -X main.commit=${COMMIT} -X main.buildDate=${BUILD_DATE}"
+      run-tests: false
+    secrets: inherit

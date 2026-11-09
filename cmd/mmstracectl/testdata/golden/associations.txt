@@ -1,0 +1,5 @@
+ID  CLIENT          SERVER        OPEN       CLOSE     ACCEPTED  AUTH  TXNS  REPORTS  UNANSWERED  GAPS  FIRST                        LAST
+1   10.0.0.1:40000  10.0.0.2:102  associate  conclude  true      none  5     0        0           0     2026-11-09T12:00:00.007000Z  2026-11-09T12:00:00.022000Z
+2   10.0.0.1:40001  10.0.0.2:102  associate  abort     true      none  0     1        0           0     2026-11-09T12:00:00.030000Z  2026-11-09T12:00:00.039000Z
+3   10.0.0.1:40002  10.0.0.2:102  midstream  reset     -         -     3     0        1           1     2026-11-09T12:00:00.045000Z  2026-11-09T12:00:00.048000Z
+4   10.0.0.1:40003  10.0.0.2:102  associate  -         true      none  1     0        0           0     2026-11-09T12:00:00.056000Z  2026-11-09T12:00:00.060000Z

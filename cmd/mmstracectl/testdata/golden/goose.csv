@@ -1,0 +1,2 @@
+file,src,dst,app_id,vlan,gocb_ref,dat_set,go_id,conf_rev,messages,changes,simulation,nds_com,max_per_second,first,last,issues
+../../testdata/substation.pcap,02:00:00:00:00:09,01:0c:cd:01:00:01,0x0001,-1,IED1LD0/LLN0$GO$gcb1,IED1LD0/LLN0$ds1,gcb1,1,6,2,0,0,6,2026-11-09T12:00:00.001000000Z,2026-11-09T12:00:00.052000000Z,"repeated (stNum, sqNum)=1, stNum jumped=1"

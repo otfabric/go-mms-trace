@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "files": [
+    {
+      "file": "../../testdata/substation.pcap",
+      "associations": [
+        {
+          "id": 1,
+          "client": "10.0.0.1:40000",
+          "server": "10.0.0.2:102",
+          "open": "associate",
+          "close": "conclude",
+          "accepted": true,
+          "authentication": "none",
+          "calling_tsap": "0001",
+          "called_tsap": "0001",
+          "transactions": 5,
+          "reports": 0,
+          "unanswered": 0,
+          "gaps": 0,
+          "first": "2026-11-09T12:00:00.007Z",
+          "last": "2026-11-09T12:00:00.022Z"
+        },
+        {
+          "id": 2,
+          "client": "10.0.0.1:40001",
+          "server": "10.0.0.2:102",
+          "open": "associate",
+          "close": "abort",
+          "accepted": true,
+          "authentication": "none",
+          "calling_tsap": "0001",
+          "called_tsap": "0001",
+          "transactions": 0,
+          "reports": 1,
+          "unanswered": 0,
+          "gaps": 0,
+          "first": "2026-11-09T12:00:00.03Z",
+          "last": "2026-11-09T12:00:00.039Z"
+        },
+        {
+          "id": 3,
+          "client": "10.0.0.1:40002",
+          "server": "10.0.0.2:102",
+          "open": "midstream",
+          "close": "reset",
+          "accepted": null,
+          "authentication": "",
+          "calling_tsap": "",
+          "called_tsap": "",
+          "transactions": 3,
+          "reports": 0,
+          "unanswered": 1,
+          "gaps": 1,
+          "first": "2026-11-09T12:00:00.045Z",
+          "last": "2026-11-09T12:00:00.048Z"
+        },
+        {
+          "id": 4,
+          "client": "10.0.0.1:40003",
+          "server": "10.0.0.2:102",
+          "open": "associate",
+          "close": "",
+          "accepted": true,
+          "authentication": "none",
+          "calling_tsap": "0001",
+          "called_tsap": "0001",
+          "transactions": 1,
+          "reports": 0,
+          "unanswered": 0,
+          "gaps": 0,
+          "first": "2026-11-09T12:00:00.056Z",
+          "last": "2026-11-09T12:00:00.06Z"
+        }
+      ]
+    }
+  ]
+}

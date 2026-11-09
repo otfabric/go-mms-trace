@@ -1,0 +1,31 @@
+# Build output
+/bin/*
+/release/*
+
+# Editor settings
+.vscode/
+
+# MacOS
+.DS_Store
+
+# Coverage reports
+/coverage.*
+/cover.*
+
+# Fuzz cache written by go test -fuzz outside testdata
+/fuzz/
+profile
+
+# Local multi-module development (never committed)
+go.work
+go.work.sum
+
+# Captures written by hand: fixtures live in testdata/ only
+*.pcap
+*.pcapng
+!testdata/**
+/cmd/mmstracectl/mmstracectl
+
+# Build artefacts live in /bin/ and /release/ (otfabric/engineering REPO-005)
+*.test
+coverage.out

@@ -1,0 +1,13 @@
+{"operation":"associate","ok":true}
+{"operation":"get-server-directory","ok":true,"names":["InteropIEDInteropLD"]}
+{"operation":"get-ld-directory","target":"InteropIEDInteropLD","ok":true,"names":["GGIO1","LLN0","MMTR1","MMXU1"]}
+{"operation":"get-ln-directory","target":"InteropIEDInteropLD/GGIO1","ok":true,"names":["SPS1","DPS1","SPCSO1","SPCSO2","SPCSO3","SetInt1"]}
+{"operation":"read","target":"InteropIEDInteropLD/GGIO1.SPS1.stVal[ST]","ok":true,"value":false}
+{"operation":"read","target":"InteropIEDInteropLD/MMXU1.TotW.mag.f[MX]","ok":true,"value":1234.5}
+{"operation":"read","target":"InteropIEDInteropLD/GGIO1.DPS1.stVal[ST]","ok":true,"value":2}
+{"operation":"read","target":"InteropIEDInteropLD/MMTR1.TotVAh.actVal[ST]","ok":true,"value":42}
+{"operation":"read","target":"InteropIEDInteropLD/LLN0.Mod.ctlModel[CF]","ok":true,"value":1}
+{"operation":"read","target":"InteropIEDInteropLD/LLN0.Mod.d[DC]","ok":true,"value":"mode"}
+{"operation":"write","target":"InteropIEDInteropLD/LLN0.Mod.stVal[ST]","ok":false,"error":"Service error: ACCESS_VIOLATION(3) MMS DataAccessError: object-access-denied"}
+{"operation":"read-dataset","target":"InteropIEDInteropLD/LLN0$dsInterop","ok":true,"values":[false,1]}
+{"operation":"conclude","ok":true}

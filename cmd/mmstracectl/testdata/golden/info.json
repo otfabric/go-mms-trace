@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "files": [
+    {
+      "file": "../../testdata/substation.pcap",
+      "format": "pcap",
+      "gzip": false,
+      "sha256": "45d605515eb57c0264ccca1c548ed7d5819e0793ed37eb82c37f07ac3f6df220",
+      "input_bytes": 6768,
+      "packets": 61,
+      "interfaces": 1,
+      "links": [
+        "ethernet"
+      ],
+      "first": "2026-11-09T12:00:00.001Z",
+      "last": "2026-11-09T12:00:00.061Z",
+      "truncated_tail": false,
+      "skipped_blocks": 0,
+      "associations": 4,
+      "transactions": 9,
+      "statuses": {
+        "error": 1,
+        "ok": 5,
+        "orphan": 1,
+        "pending": 1,
+        "unanswered": 1
+      },
+      "reports": 1,
+      "goose_streams": 1,
+      "sv_streams": 1,
+      "counters": {
+        "tpkt_resync": 0,
+        "cotp_errors": 0,
+        "tsdu_errors": 0,
+        "bare_mms": 0,
+        "tso_segments": 0,
+        "goose_errors": 0,
+        "sv_errors": 0
+      },
+      "services": {
+        "FileDelete": 1,
+        "GetNameList": 1,
+        "Identify": 1,
+        "Read": 5,
+        "Write": 1
+      },
+      "unsupported": {
+        "other_tcp": 1
+      }
+    }
+  ]
+}

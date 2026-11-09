@@ -1,0 +1,2 @@
+file,time,association,frame,list_name,variables,values
+../../testdata/substation.pcap,2026-11-09T12:00:00.036000000Z,2,36,,LD0/LLN0$RP$urcb,1

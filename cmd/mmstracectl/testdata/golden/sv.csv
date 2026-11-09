@@ -1,0 +1,2 @@
+file,src,dst,app_id,vlan,sv_id,dat_set,conf_rev,messages,asdus,lost,repeated,wrap,first,last,issues
+../../testdata/substation.pcap,02:00:00:00:00:08,01:0c:cd:04:00:01,0x4000,-1,MU01,,1,5,5,2,1,6,2026-11-09T12:00:00.002000000Z,2026-11-09T12:00:00.044000000Z,"lost=2, repeated=1"

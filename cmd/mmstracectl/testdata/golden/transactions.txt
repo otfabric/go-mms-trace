@@ -1,0 +1,10 @@
+TIME                         ASSOC  INVOKE  SERVICE      STATUS      LATENCY_MS  OBJECT
+2026-11-09T12:00:00.011000Z  1      1       Identify     ok          1.000       OT Fabric trace 1
+2026-11-09T12:00:00.013000Z  1      2       Read         ok          1.000       LD0/MMXU1$MX$Hz
+2026-11-09T12:00:00.015000Z  1      3       Write        ok          1.000       LD0/MMXU1$MX$Hz
+2026-11-09T12:00:00.017000Z  1      4       GetNameList  ok          1.000       class 0 in LD0
+2026-11-09T12:00:00.019000Z  1      5       FileDelete   error       1.000       -
+2026-11-09T12:00:00.045000Z  3      1       Read         ok          1.000       LD0/MMXU1$MX$Hz
+2026-11-09T12:00:00.047000Z  3      2       Read         unanswered  -           LD0/MMXU1$MX$Hz
+2026-11-09T12:00:00.048000Z  3      3       Read         orphan      -           -
+2026-11-09T12:00:00.060000Z  4      1       Read         pending     -           LD0/MMXU1$MX$Hz

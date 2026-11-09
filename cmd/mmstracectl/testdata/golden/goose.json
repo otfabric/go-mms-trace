@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "files": [
+    {
+      "file": "../../testdata/substation.pcap",
+      "streams": [
+        {
+          "src": "02:00:00:00:00:09",
+          "dst": "01:0c:cd:01:00:01",
+          "app_id": 1,
+          "vlan": -1,
+          "gocb_ref": "IED1LD0/LLN0$GO$gcb1",
+          "dat_set": "IED1LD0/LLN0$ds1",
+          "go_id": "gcb1",
+          "conf_rev": 1,
+          "messages": 6,
+          "changes": 2,
+          "simulation": 0,
+          "nds_com": 0,
+          "max_per_second": 6,
+          "first": "2026-11-09T12:00:00.001Z",
+          "last": "2026-11-09T12:00:00.052Z",
+          "issues": {
+            "repeated (stNum, sqNum)": 1,
+            "stNum jumped": 1
+          }
+        }
+      ]
+    }
+  ]
+}

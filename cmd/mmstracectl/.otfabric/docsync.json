@@ -1,0 +1,10 @@
+{
+  "clis": [
+    {
+      "name": "mmstracectl",
+      "manifest": ".",
+      "exit_codes": ".",
+      "json_types": "."
+    }
+  ]
+}

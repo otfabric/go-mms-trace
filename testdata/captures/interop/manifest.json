@@ -1,0 +1,158 @@
+{
+  "source": "otfabric/iec61850-interop v1.4.0 (contract 1.3), pinned images run locally with Docker; recorded with scripts/record-interop.sh on 2026-11-09",
+  "capture": "tcpdump in a container sharing the server's (or publisher's) network namespace; MMS on TCP 1102 (the images' port)",
+  "note": "Traffic between independent stacks; no OT Fabric code on either end. The captures are recordings of protocol traffic, not code of the stacks.",
+  "stack_licences": {
+    "libiec61850": "GPL-3.0-only (or commercial)",
+    "iec61850bean": "Apache-2.0",
+    "dscsystems": "GPL-3.0",
+    "iec61850-rust": "MIT OR Apache-2.0",
+    "cbsigma": "Apache-2.0"
+  },
+  "files": [
+    {
+      "file": "libiec61850_mms-server_mms-client-iec61850-rust.pcap",
+      "kind": "mms",
+      "sha256": "d598a7e907a1f1aa9dff36c0c5e8d8c42875687212719f6ecd0c900fb0064a3e",
+      "bytes": 184094,
+      "server": "libiec61850-mms-server",
+      "server_stack": "libiec61850",
+      "server_image": "ghcr.io/otfabric/iec61850-interop-libiec61850@sha256:5f865e1917f246763e992701c688a58d157d641ca91674e51bbc342ef945adad",
+      "client": "iec61850-rust-mms-client",
+      "client_stack": "iec61850-rust",
+      "client_image": "ghcr.io/otfabric/iec61850-interop-iec61850-rust@sha256:c961c039384b0ea968e786a259e1f7a3a4781f2b544ff50d794bd965e991314c",
+      "client_operations": "libiec61850_mms-server_mms-client-iec61850-rust.client.jsonl"
+    },
+    {
+      "file": "dscsystems_mms-server_mms-client-libiec61850.pcap",
+      "kind": "mms",
+      "sha256": "fbce5e2c5bd2d7cd86711410935d17c675cf5846c756667345a479e688b620e7",
+      "bytes": 191253,
+      "server": "dscsystems-mms-server",
+      "server_stack": "dscsystems",
+      "server_image": "ghcr.io/otfabric/iec61850-interop-dscsystems@sha256:bba8bc1653b4c5bb51c4b8766f0bd99d77dd3523574ed2630b09695212618f2e",
+      "client": "libiec61850-mms-client",
+      "client_stack": "libiec61850",
+      "client_image": "ghcr.io/otfabric/iec61850-interop-libiec61850@sha256:5f865e1917f246763e992701c688a58d157d641ca91674e51bbc342ef945adad",
+      "client_operations": "dscsystems_mms-server_mms-client-libiec61850.client.jsonl"
+    },
+    {
+      "file": "libiec61850_ied-server_ied-client-iec61850bean.pcap",
+      "kind": "mms",
+      "sha256": "e1aa9694ee0ffd7b7a7875c4ef9d6e1ad04b41a86f5948f528c5c175663a78d5",
+      "bytes": 15741,
+      "server": "libiec61850-ied-server",
+      "server_stack": "libiec61850",
+      "server_image": "ghcr.io/otfabric/iec61850-interop-libiec61850@sha256:5f865e1917f246763e992701c688a58d157d641ca91674e51bbc342ef945adad",
+      "client": "iec61850bean-ied-client",
+      "client_stack": "iec61850bean",
+      "client_image": "ghcr.io/otfabric/iec61850-interop-iec61850bean@sha256:df9b48b5f903ec55f7bcb7baabe651ae204c685702d77979e89165fad00c6416",
+      "client_operations": "libiec61850_ied-server_ied-client-iec61850bean.client.jsonl"
+    },
+    {
+      "file": "iec61850bean_ied-server_ied-client-libiec61850.pcap",
+      "kind": "mms",
+      "sha256": "dcbc99fdd64353c541f16b5d003f06d451cdb6f16d659435c301c95c6bc378b9",
+      "bytes": 8630,
+      "server": "iec61850bean-ied-server",
+      "server_stack": "iec61850bean",
+      "server_image": "ghcr.io/otfabric/iec61850-interop-iec61850bean@sha256:df9b48b5f903ec55f7bcb7baabe651ae204c685702d77979e89165fad00c6416",
+      "client": "libiec61850-ied-client",
+      "client_stack": "libiec61850",
+      "client_image": "ghcr.io/otfabric/iec61850-interop-libiec61850@sha256:5f865e1917f246763e992701c688a58d157d641ca91674e51bbc342ef945adad",
+      "client_operations": "iec61850bean_ied-server_ied-client-libiec61850.client.jsonl"
+    },
+    {
+      "file": "libiec61850_ied-server_ied-client-dscsystems.pcap",
+      "kind": "mms",
+      "sha256": "0d81a01df98210d4485aed8171687e4c0899b437f485217c4f60ec0d61ade3fc",
+      "bytes": 14821,
+      "server": "libiec61850-ied-server",
+      "server_stack": "libiec61850",
+      "server_image": "ghcr.io/otfabric/iec61850-interop-libiec61850@sha256:5f865e1917f246763e992701c688a58d157d641ca91674e51bbc342ef945adad",
+      "client": "dscsystems-ied-client",
+      "client_stack": "dscsystems",
+      "client_image": "ghcr.io/otfabric/iec61850-interop-dscsystems@sha256:bba8bc1653b4c5bb51c4b8766f0bd99d77dd3523574ed2630b09695212618f2e",
+      "client_operations": "libiec61850_ied-server_ied-client-dscsystems.client.jsonl"
+    },
+    {
+      "file": "libiec61850_ied-server_ied-client-cbsigma.pcap",
+      "kind": "mms",
+      "sha256": "6eb3d478da9293ddd7b063d68561f9098b7664c738ca7e92b95bfc2542284585",
+      "bytes": 10584,
+      "server": "libiec61850-ied-server",
+      "server_stack": "libiec61850",
+      "server_image": "ghcr.io/otfabric/iec61850-interop-libiec61850@sha256:5f865e1917f246763e992701c688a58d157d641ca91674e51bbc342ef945adad",
+      "client": "cbsigma-ied-client",
+      "client_stack": "cbsigma",
+      "client_image": "ghcr.io/otfabric/iec61850-interop-cbsigma@sha256:bf0597703e7d1495ab3aa144d481bc92a0a4aef87a2bfafcbd75f7c1fbb4aa16",
+      "client_operations": "libiec61850_ied-server_ied-client-cbsigma.client.jsonl"
+    },
+    {
+      "file": "iec61850bean_ied-server_ied-reporter-libiec61850.pcap",
+      "kind": "mms",
+      "sha256": "e38fd1c9e1eb12272ed48d4629451b64c4781ce7aa89768831a83cbed3d9aba6",
+      "bytes": 7937,
+      "server": "iec61850bean-ied-server",
+      "server_stack": "iec61850bean",
+      "server_image": "ghcr.io/otfabric/iec61850-interop-iec61850bean@sha256:df9b48b5f903ec55f7bcb7baabe651ae204c685702d77979e89165fad00c6416",
+      "client": "libiec61850-ied-reporter",
+      "client_stack": "libiec61850",
+      "client_image": "ghcr.io/otfabric/iec61850-interop-libiec61850@sha256:5f865e1917f246763e992701c688a58d157d641ca91674e51bbc342ef945adad",
+      "client_operations": "iec61850bean_ied-server_ied-reporter-libiec61850.client.jsonl"
+    },
+    {
+      "file": "libiec61850_ied-server_ied-reporter-iec61850-rust.pcap",
+      "kind": "mms",
+      "sha256": "3de7cdaeb22c327691f1e1884d7ca65495c60d9813751390f59c55e07f11ea7e",
+      "bytes": 8647,
+      "server": "libiec61850-ied-server",
+      "server_stack": "libiec61850",
+      "server_image": "ghcr.io/otfabric/iec61850-interop-libiec61850@sha256:5f865e1917f246763e992701c688a58d157d641ca91674e51bbc342ef945adad",
+      "client": "iec61850-rust-ied-reporter",
+      "client_stack": "iec61850-rust",
+      "client_image": "ghcr.io/otfabric/iec61850-interop-iec61850-rust@sha256:c961c039384b0ea968e786a259e1f7a3a4781f2b544ff50d794bd965e991314c",
+      "client_operations": "libiec61850_ied-server_ied-reporter-iec61850-rust.client.jsonl"
+    },
+    {
+      "file": "dscsystems_ied-server_ied-controller-libiec61850.pcap",
+      "kind": "mms",
+      "sha256": "53116afeab85abbd64c66bc7655d16847104f2a15e78f60f0eb76b3e4183eb4a",
+      "bytes": 10034,
+      "server": "dscsystems-ied-server",
+      "server_stack": "dscsystems",
+      "server_image": "ghcr.io/otfabric/iec61850-interop-dscsystems@sha256:bba8bc1653b4c5bb51c4b8766f0bd99d77dd3523574ed2630b09695212618f2e",
+      "client": "libiec61850-ied-controller",
+      "client_stack": "libiec61850",
+      "client_image": "ghcr.io/otfabric/iec61850-interop-libiec61850@sha256:5f865e1917f246763e992701c688a58d157d641ca91674e51bbc342ef945adad",
+      "client_operations": "dscsystems_ied-server_ied-controller-libiec61850.client.jsonl"
+    },
+    {
+      "file": "libiec61850_goose-publisher.pcap",
+      "kind": "goose",
+      "sha256": "2a99f41b034226b832778b46568f6d14bac094e4c0d061e933012fb6ad6b280a",
+      "bytes": 3011,
+      "server": "libiec61850-goose-publisher",
+      "server_stack": "libiec61850",
+      "server_image": "ghcr.io/otfabric/iec61850-interop-libiec61850@sha256:5f865e1917f246763e992701c688a58d157d641ca91674e51bbc342ef945adad"
+    },
+    {
+      "file": "cbsigma_goose-publisher.pcap",
+      "kind": "goose",
+      "sha256": "7a2d5fa8ceaa9cd14bbbe5a38716d0e9e5a6518712ee6562cf24bf649a55ecf9",
+      "bytes": 3011,
+      "server": "cbsigma-goose-publisher",
+      "server_stack": "cbsigma",
+      "server_image": "ghcr.io/otfabric/iec61850-interop-cbsigma@sha256:bf0597703e7d1495ab3aa144d481bc92a0a4aef87a2bfafcbd75f7c1fbb4aa16"
+    },
+    {
+      "file": "libiec61850_sv-publisher.pcap",
+      "kind": "sv",
+      "sha256": "f1b8bf6975807d54d4aaae1d1c75197847e98f7db4e7de6065326ac78897d91f",
+      "bytes": 2093969,
+      "server": "libiec61850-sv-publisher",
+      "server_stack": "libiec61850",
+      "server_image": "ghcr.io/otfabric/iec61850-interop-libiec61850@sha256:5f865e1917f246763e992701c688a58d157d641ca91674e51bbc342ef945adad"
+    }
+  ]
+}

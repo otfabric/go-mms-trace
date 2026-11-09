@@ -1,0 +1,2 @@
+SRC                APPID   VLAN  SVID  MESSAGES  ASDUS  LOST  REPEATED  WRAP  ISSUES
+02:00:00:00:00:08  0x4000  -     MU01  5         5      2     1         6     lost=2, repeated=1

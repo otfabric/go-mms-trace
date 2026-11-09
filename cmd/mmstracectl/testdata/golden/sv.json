@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "files": [
+    {
+      "file": "../../testdata/substation.pcap",
+      "streams": [
+        {
+          "src": "02:00:00:00:00:08",
+          "dst": "01:0c:cd:04:00:01",
+          "app_id": 16384,
+          "vlan": -1,
+          "sv_id": "MU01",
+          "dat_set": "",
+          "conf_rev": 1,
+          "messages": 5,
+          "asdus": 5,
+          "lost": 2,
+          "repeated": 1,
+          "wrap": 6,
+          "first": "2026-11-09T12:00:00.002Z",
+          "last": "2026-11-09T12:00:00.044Z",
+          "issues": {
+            "lost": 2,
+            "repeated": 1
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+# Documents against the code (DOC-008, standards/documentation.md#doc-sync).
+# No path filter: this is the check that runs when ci.yml skips a
+# Markdown-only change, so branch protection can require it.
+name: Docs
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    name: Docs (library)
+    uses: otfabric/.github/.github/workflows/docs-check.yml@v3.5.0
+    with:
+      docsync-version: v0.3.1
+      # No policy.yml in this repository: this job runs otfabric-policy, so
+      # Markdown-only changes still get the Policy check.
+      policy-version: v1.4.2
+    secrets: inherit
+
+  docs-cli:
+    name: Docs (cmd/mmstracectl)
+    uses: otfabric/.github/.github/workflows/docs-check.yml@v3.5.0
+    with:
+      module-dir: cmd/mmstracectl
+      docsync-version: v0.3.1
+      policy-version: v1.4.2
+      run-policy: false
+    secrets: inherit

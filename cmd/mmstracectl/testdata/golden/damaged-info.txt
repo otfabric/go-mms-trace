@@ -1,0 +1,15 @@
+file           ../../testdata/damaged.pcap
+format         pcap, 6768 bytes, 10 packets
+interfaces     1 (ethernet)
+sha256         64be628bf5994aa22d3783567b90ecf411d1adbbe7b19a912ed256534b3be143
+first          2026-11-09T12:00:00.001000Z
+last           2026-11-09T12:00:00.010000Z
+associations   1
+transactions   0 (-)
+services       -
+reports        0
+goose streams  1
+sv streams     1
+counters       tpkt_resync=0, cotp_errors=0, tsdu_errors=0, bare_mms=0, tso_segments=0, goose_errors=0, sv_errors=0
+unsupported    -
+error          trace: damaged capture: trace: corrupt trace file: record at offset 1251 has a captured length of 2147483647 bytes

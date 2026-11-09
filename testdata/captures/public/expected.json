@@ -1,0 +1,2062 @@
+{
+ "adsc-zeek/conclude.pcap": {
+  "packets": 7,
+  "associations": {
+   "associate/conclude": 1
+  },
+  "statuses": {},
+  "services": {},
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/defineNamedVariableList_deleteNamedVariableList.pcap": {
+  "packets": 22,
+  "associations": {
+   "associate/disconnect": 1
+  },
+  "statuses": {
+   "ok": 2
+  },
+  "services": {
+   "DefineNamedVariableList": 1,
+   "DeleteNamedVariableList": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/deleteNamedVariableList_optional_listOfvariableListName_domainName.pcap": {
+  "packets": 5,
+  "associations": {
+   "midstream/": 1
+  },
+  "statuses": {
+   "ok": 1
+  },
+  "services": {
+   "DeleteNamedVariableList": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/fileDirectory.pcap": {
+  "packets": 76,
+  "associations": {
+   "associate/abort": 4
+  },
+  "statuses": {
+   "ok": 3
+  },
+  "services": {
+   "FileDirectory": 3
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/fileDirectory_optional_continueAfter.pcap": {
+  "packets": 5,
+  "associations": {
+   "midstream/": 1
+  },
+  "statuses": {
+   "ok": 1
+  },
+  "services": {
+   "FileDirectory": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/fileOpenReadClose.pcap": {
+  "packets": 416,
+  "associations": {
+   "associate/abort": 2
+  },
+  "statuses": {
+   "ok": 38
+  },
+  "services": {
+   "FileClose": 2,
+   "FileOpen": 2,
+   "FileRead": 34
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/fileRename.pcap": {
+  "packets": 20,
+  "associations": {
+   "associate/abort": 1
+  },
+  "statuses": {
+   "ok": 1
+  },
+  "services": {
+   "FileRename": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/getNameList.pcap": {
+  "packets": 7,
+  "associations": {
+   "midstream/": 1
+  },
+  "statuses": {
+   "ok": 2
+  },
+  "services": {
+   "GetNameList": 2
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/getNameList_optional_continueAfter.pcap": {
+  "packets": 5,
+  "associations": {
+   "midstream/": 1
+  },
+  "statuses": {
+   "ok": 1
+  },
+  "services": {
+   "GetNameList": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/getNamedVariableListAttributes.pcap": {
+  "packets": 10,
+  "associations": {
+   "midstream/": 1
+  },
+  "statuses": {
+   "ok": 3
+  },
+  "services": {
+   "GetNamedVariableListAttributes": 3
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/getVariableAccessAttributes.pcap": {
+  "packets": 7,
+  "associations": {
+   "midstream/": 1
+  },
+  "statuses": {
+   "ok": 2
+  },
+  "services": {
+   "GetVariableAccessAttributes": 2
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/getVariableAccessAttributes_optional_address.pcap": {
+  "packets": 5,
+  "associations": {
+   "midstream/": 1
+  },
+  "statuses": {
+   "ok": 1
+  },
+  "services": {
+   "GetVariableAccessAttributes": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/identify.pcap": {
+  "packets": 18,
+  "associations": {
+   "associate/disconnect": 1
+  },
+  "statuses": {
+   "ok": 1
+  },
+  "services": {
+   "Identify": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/obtainFile.pcap": {
+  "packets": 34,
+  "associations": {
+   "associate/disconnect": 1
+  },
+  "statuses": {
+   "ok": 4
+  },
+  "services": {
+   "FileClose": 1,
+   "FileOpen": 1,
+   "FileRead": 1,
+   "ObtainFile": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {
+    "not_tcp": 4
+   }
+  }
+ },
+ "adsc-zeek/read.pcap": {
+  "packets": 10,
+  "associations": {
+   "midstream/": 2
+  },
+  "statuses": {
+   "ok": 2
+  },
+  "services": {
+   "Read": 2
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/read_optional_variableAccessSpecification.pcap": {
+  "packets": 5,
+  "associations": {
+   "midstream/": 1
+  },
+  "statuses": {
+   "ok": 1
+  },
+  "services": {
+   "Read": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/status_0.pcap": {
+  "packets": 9,
+  "associations": {
+   "associate/": 1
+  },
+  "statuses": {
+   "ok": 2
+  },
+  "services": {
+   "Status": 2
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/status_1.pcap": {
+  "packets": 7,
+  "associations": {
+   "associate/": 1
+  },
+  "statuses": {
+   "ok": 1
+  },
+  "services": {
+   "Status": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/status_2.pcap": {
+  "packets": 7,
+  "associations": {
+   "associate/": 1
+  },
+  "statuses": {
+   "ok": 1
+  },
+  "services": {
+   "Status": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/status_3.pcap": {
+  "packets": 7,
+  "associations": {
+   "associate/": 1
+  },
+  "statuses": {
+   "ok": 1
+  },
+  "services": {
+   "Status": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/status_optional_localDetail.pcap": {
+  "packets": 5,
+  "associations": {
+   "midstream/": 1
+  },
+  "statuses": {
+   "ok": 1
+  },
+  "services": {
+   "Status": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "adsc-zeek/write.pcap": {
+  "packets": 5,
+  "associations": {
+   "midstream/": 1
+  },
+  "statuses": {
+   "ok": 1
+  },
+  "services": {
+   "Write": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "ics-pcaps/9-2-sv.pcap": {
+  "packets": 20,
+  "associations": {},
+  "statuses": {},
+  "services": {},
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [
+   "XJPA_MU0001: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU0101: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU0201: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU0301: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU0401: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU0501: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU0601: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU0701: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU0801: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU0901: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU1001: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU1101: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU1201: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU1301: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU1401: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU1501: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU1601: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU1701: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU1801: 5 ASDUs, 0 lost, 0 repeated",
+   "XJPA_MU1901: 5 ASDUs, 0 lost, 0 repeated"
+  ],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "ics-pcaps/IEC61850_SV.pcap": {
+  "packets": 10,
+  "associations": {},
+  "statuses": {},
+  "services": {},
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 10,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "ics-pcaps/Substation/ABB1.pcap": {
+  "packets": 1899,
+  "associations": {
+   "associate/": 1
+  },
+  "statuses": {
+   "ok": 641,
+   "pending": 1
+  },
+  "services": {
+   "GetNameList": 227,
+   "GetNamedVariableListAttributes": 2,
+   "GetVariableAccessAttributes": 192,
+   "Read": 221
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 15,
+   "unsupported": {}
+  }
+ },
+ "ics-pcaps/Substation/ABB2.pcap": {
+  "packets": 1975,
+  "associations": {
+   "associate/": 1
+  },
+  "statuses": {
+   "ok": 681
+  },
+  "services": {
+   "GetNameList": 227,
+   "GetNamedVariableListAttributes": 2,
+   "GetVariableAccessAttributes": 192,
+   "Read": 260
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 16,
+   "unsupported": {}
+  }
+ },
+ "ics-pcaps/Substation/ABB3.pcap": {
+  "packets": 2498,
+  "associations": {
+   "associate/": 1
+  },
+  "statuses": {
+   "ok": 663
+  },
+  "services": {
+   "GetNameList": 227,
+   "GetNamedVariableListAttributes": 2,
+   "GetVariableAccessAttributes": 192,
+   "Read": 242
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 18,
+   "unsupported": {
+    "not_ip": 39,
+    "not_tcp": 13
+   }
+  }
+ },
+ "ics-pcaps/Substation/circuit.pcap": {
+  "packets": 1922,
+  "associations": {
+   "associate/": 1
+  },
+  "statuses": {
+   "ok": 654,
+   "pending": 1
+  },
+  "services": {
+   "GetNameList": 227,
+   "GetNamedVariableListAttributes": 2,
+   "GetVariableAccessAttributes": 192,
+   "Read": 234
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 18,
+   "unsupported": {}
+  }
+ },
+ "ics-pcaps/Substation/simens.pcap": {
+  "packets": 434,
+  "associations": {
+   "associate/": 1
+  },
+  "statuses": {
+   "ok": 206
+  },
+  "services": {
+   "GetNameList": 32,
+   "GetNamedVariableListAttributes": 2,
+   "GetVariableAccessAttributes": 47,
+   "Read": 125
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "ics-pcaps/Substation/simens_merge.pcap": {
+  "packets": 432,
+  "associations": {
+   "associate/": 1
+  },
+  "statuses": {
+   "ok": 206
+  },
+  "services": {
+   "GetNameList": 32,
+   "GetNamedVariableListAttributes": 2,
+   "GetVariableAccessAttributes": 47,
+   "Read": 125
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "ics-pcaps/Substation/wamp.pcap": {
+  "packets": 374,
+  "associations": {
+   "associate/": 1
+  },
+  "statuses": {
+   "ok": 170
+  },
+  "services": {
+   "GetNameList": 26,
+   "GetNamedVariableListAttributes": 2,
+   "GetVariableAccessAttributes": 49,
+   "Read": 93
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "ics-pcaps/gooseind1_7.pcap": {
+  "packets": 73,
+  "associations": {},
+  "statuses": {},
+  "services": {},
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [
+   "OG_TRALD0/LLN0$GO$gcbTRdevrede: 40 messages, 4 changes, issues map[]"
+  ],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {
+    "not_ip": 7,
+    "not_tcp": 14
+   }
+  }
+ },
+ "ics-pcaps/iedscout.pcap": {
+  "packets": 717,
+  "associations": {
+   "midstream/": 1
+  },
+  "statuses": {
+   "ok": 179
+  },
+  "services": {
+   "Read": 179
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [
+   "OG_TRALD0/LLN0$GO$gcbTRdevrede: 63 messages, 4 changes, issues map[]"
+  ],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {
+    "not_tcp": 117
+   }
+  }
+ },
+ "ics-pcaps/mms1.pcap": {
+  "packets": 453,
+  "associations": {
+   "associate/": 1
+  },
+  "statuses": {
+   "ok": 199
+  },
+  "services": {
+   "GetNameList": 1,
+   "Read": 198
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "ics-pcaps/mms2.pcap": {
+  "packets": 2107,
+  "associations": {
+   "associate/": 1
+  },
+  "statuses": {
+   "ok": 712
+  },
+  "services": {
+   "GetNameList": 244,
+   "GetNamedVariableListAttributes": 12,
+   "GetVariableAccessAttributes": 198,
+   "Read": 258
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 14,
+   "unsupported": {}
+  }
+ },
+ "ics-pcaps/mmsy.pcap": {
+  "packets": 1009,
+  "associations": {
+   "associate/": 1
+  },
+  "statuses": {
+   "ok": 243
+  },
+  "services": {
+   "GetNameList": 1,
+   "Read": 242
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [
+   "OG_TRALD0/LLN0$GO$gcbTRdevrede: 5 messages, 0 changes, issues map[]"
+  ],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {
+    "not_ip": 30,
+    "not_tcp": 6,
+    "other_tcp": 6
+   }
+  }
+ },
+ "ics-pcaps/mmsy1.pcap": {
+  "packets": 1071,
+  "associations": {
+   "associate/": 1
+  },
+  "statuses": {
+   "ok": 253
+  },
+  "services": {
+   "GetNameList": 1,
+   "Read": 252
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [
+   "OG_TRALD0/LLN0$GO$gcbTRdevrede: 6 messages, 0 changes, issues map[]"
+  ],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {
+    "not_ip": 35,
+    "not_tcp": 4,
+    "other_tcp": 9
+   }
+  }
+ },
+ "ics-pcaps/pres.pcap": {
+  "packets": 175,
+  "associations": {
+   "midstream/": 1
+  },
+  "statuses": {
+   "ok": 29,
+   "pending": 1
+  },
+  "services": {
+   "Read": 30
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [
+   "OG_TRALD0/LLN0$GO$gcbTRdevrede: 3 messages, 0 changes, issues map[]"
+  ],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {
+    "not_ip": 17,
+    "not_tcp": 5,
+    "other_tcp": 4
+   }
+  }
+ },
+ "ics-pcaps/pres1.pcap": {
+  "packets": 276,
+  "associations": {
+   "midstream/": 1
+  },
+  "statuses": {
+   "ok": 40,
+   "pending": 1
+  },
+  "services": {
+   "Read": 41
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [
+   "OG_TRALD0/LLN0$GO$gcbTRdevrede: 4 messages, 0 changes, issues map[]"
+  ],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {
+    "not_ip": 26,
+    "not_tcp": 40,
+    "other_tcp": 5
+   }
+  }
+ },
+ "ics-pcaps/setvalue.pcap": {
+  "packets": 20,
+  "associations": {
+   "associate/conclude": 1
+  },
+  "statuses": {
+   "ok": 1,
+   "orphan": 1
+  },
+  "services": {
+   "": 1,
+   "Read": 1
+  },
+  "reports": 0,
+  "decode_errors": 1,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 1,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/8d7c7db0-9804-012b-b2a6-0016cb8cea27.pcap": {
+  "packets": 498,
+  "associations": {
+   "associate/": 1
+  },
+  "statuses": {
+   "ok": 23
+  },
+  "services": {
+   "GetNameList": 2,
+   "GetNamedVariableListAttributes": 4,
+   "Identify": 7,
+   "Read": 6,
+   "Write": 4
+  },
+  "reports": 115,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/GOOSE/GOOSE.pcap": {
+  "packets": 8,
+  "associations": {},
+  "statuses": {},
+  "services": {},
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [
+   "GEDeviceF650/LLN0$GO$gcb01: 8 messages, 0 changes, issues map[]"
+  ],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/GOOSE/GOOSE_DEMO.pcap": {
+  "packets": 1,
+  "associations": {},
+  "statuses": {},
+  "services": {},
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [
+   "111: 1 messages, 0 changes, issues map[]"
+  ],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/GOOSE/Sample_File_GOOSE.pcap": {
+  "packets": 451,
+  "associations": {},
+  "statuses": {},
+  "services": {},
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [
+   "AA1C1Q01A1LD0/LLN0$GO$gcb_A: 120 messages, 63 changes, issues map[]",
+   "AA1C1Q05A1LD0/LLN0$GO$gcb_A: 167 messages, 99 changes, issues map[]",
+   "AA1C1Q07A1LD0/LLN0$GO$gcb_A: 164 messages, 88 changes, issues map[]"
+  ],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/iec61850_get_name_list.pcap": {
+  "packets": 20,
+  "associations": {
+   "associate/conclude": 1
+  },
+  "statuses": {
+   "ok": 1,
+   "orphan": 1
+  },
+  "services": {
+   "": 1,
+   "GetNameList": 1
+  },
+  "reports": 0,
+  "decode_errors": 2,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 1,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/iec61850_get_variable_access_attributes.pcap": {
+  "packets": 20,
+  "associations": {
+   "associate/conclude": 1
+  },
+  "statuses": {
+   "ok": 1,
+   "orphan": 1
+  },
+  "services": {
+   "": 1,
+   "GetVariableAccessAttributes": 1
+  },
+  "reports": 0,
+  "decode_errors": 2,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 1,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/iec61850_read.pcap": {
+  "packets": 20,
+  "associations": {
+   "associate/conclude": 1
+  },
+  "statuses": {
+   "ok": 1,
+   "orphan": 1
+  },
+  "services": {
+   "": 1,
+   "Read": 1
+  },
+  "reports": 0,
+  "decode_errors": 1,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 1,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/iec61850_release.pcap": {
+  "packets": 16,
+  "associations": {
+   "associate/conclude": 1
+  },
+  "statuses": {
+   "orphan": 1
+  },
+  "services": {
+   "Read": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 1,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/iec61850_write.pcap": {
+  "packets": 20,
+  "associations": {
+   "associate/conclude": 1
+  },
+  "statuses": {
+   "ok": 1,
+   "orphan": 1
+  },
+  "services": {
+   "": 1,
+   "Write": 1
+  },
+  "reports": 0,
+  "decode_errors": 1,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 1,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/mms-cancelRequest.pcap": {
+  "packets": 20,
+  "associations": {
+   "connect/conclude": 1
+  },
+  "statuses": {},
+  "services": {},
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 3,
+   "cotp_errors": 2,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 17,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/mms-confirmedRequestPDU.pcap": {
+  "packets": 20,
+  "associations": {
+   "connect/conclude": 1
+  },
+  "statuses": {
+   "unanswered": 1
+  },
+  "services": {
+   "": 1
+  },
+  "reports": 0,
+  "decode_errors": 1,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 3,
+   "cotp_errors": 2,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 17,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/mms-deleteProgramInvocation.pcap": {
+  "packets": 20,
+  "associations": {
+   "connect/conclude": 1
+  },
+  "statuses": {
+   "unanswered": 1
+  },
+  "services": {
+   "DeleteProgramInvocation": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 3,
+   "cotp_errors": 2,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 17,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/mms-getAlarmSummary.pcap": {
+  "packets": 20,
+  "associations": {
+   "connect/conclude": 1
+  },
+  "statuses": {
+   "unanswered": 1
+  },
+  "services": {
+   "GetAlarmSummary": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 3,
+   "cotp_errors": 2,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 17,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/mms-getDomainAttributes.pcap": {
+  "packets": 20,
+  "associations": {
+   "connect/conclude": 1
+  },
+  "statuses": {
+   "unanswered": 1
+  },
+  "services": {
+   "GetDomainAttributes": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 3,
+   "cotp_errors": 2,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 17,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/mms-initiateDownloadSequence.pcap": {
+  "packets": 24,
+  "associations": {
+   "connect/conclude": 1
+  },
+  "statuses": {
+   "unanswered": 2
+  },
+  "services": {
+   "InitiateDownloadSequence": 1,
+   "TakeControl": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 4,
+   "cotp_errors": 2,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 24,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/mms-initiateUploadSequence.pcap": {
+  "packets": 20,
+  "associations": {
+   "connect/conclude": 1
+  },
+  "statuses": {
+   "unanswered": 1
+  },
+  "services": {
+   "InitiateUploadSequence": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 3,
+   "cotp_errors": 2,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 17,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/mms-killRequest.pcap": {
+  "packets": 20,
+  "associations": {
+   "connect/conclude": 1
+  },
+  "statuses": {
+   "unanswered": 1
+  },
+  "services": {
+   "Kill": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 3,
+   "cotp_errors": 2,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 17,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/mms-readRequest.pcap": {
+  "packets": 16,
+  "associations": {
+   "connect/reset": 1
+  },
+  "statuses": {
+   "unanswered": 1
+  },
+  "services": {
+   "Read": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 2,
+   "cotp_errors": 2,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 9,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/mms-relinquishControl.pcap": {
+  "packets": 24,
+  "associations": {
+   "connect/conclude": 1
+  },
+  "statuses": {
+   "unanswered": 2
+  },
+  "services": {
+   "RelinquishControl": 1,
+   "TakeControl": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 4,
+   "cotp_errors": 2,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 24,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/mms-resetRequest.pcap": {
+  "packets": 20,
+  "associations": {
+   "connect/conclude": 1
+  },
+  "statuses": {
+   "unanswered": 1
+  },
+  "services": {
+   "Reset": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 3,
+   "cotp_errors": 2,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 17,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/mms-resumeRequest.pcap": {
+  "packets": 20,
+  "associations": {
+   "connect/conclude": 1
+  },
+  "statuses": {
+   "unanswered": 1
+  },
+  "services": {
+   "Resume": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 3,
+   "cotp_errors": 2,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 17,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/mms-startRequest.pcap": {
+  "packets": 24,
+  "associations": {
+   "connect/conclude": 1
+  },
+  "statuses": {
+   "unanswered": 2
+  },
+  "services": {
+   "Start": 1,
+   "Stop": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 4,
+   "cotp_errors": 2,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 24,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/mms-stopRequest.pcap": {
+  "packets": 24,
+  "associations": {
+   "connect/conclude": 1
+  },
+  "statuses": {
+   "unanswered": 2
+  },
+  "services": {
+   "Start": 1,
+   "Stop": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 4,
+   "cotp_errors": 2,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 24,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/mms-takeControl.pcap": {
+  "packets": 24,
+  "associations": {
+   "connect/conclude": 1
+  },
+  "statuses": {
+   "unanswered": 2
+  },
+  "services": {
+   "RelinquishControl": 1,
+   "TakeControl": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 4,
+   "cotp_errors": 2,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 24,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/MMS_Specific_Commands/mms-terminateUploadSequence.pcap": {
+  "packets": 24,
+  "associations": {
+   "connect/conclude": 1
+  },
+  "statuses": {
+   "unanswered": 2
+  },
+  "services": {
+   "InitiateUploadSequence": 1,
+   "TerminateUploadSequence": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 4,
+   "cotp_errors": 3,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 19,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/Sample_File_MMS_and_GOOSE.pcap": {
+  "packets": 301,
+  "associations": {
+   "associate/release": 1,
+   "midstream/": 4
+  },
+  "statuses": {
+   "error": 1,
+   "ok": 1
+  },
+  "services": {
+   "GetVariableAccessAttributes": 1,
+   "Read": 1
+  },
+  "reports": 28,
+  "decode_errors": 0,
+  "goose": [
+   "AA1C1Q01A1LD0/LLN0$GO$gcb_A: 32 messages, 7 changes, issues map[]",
+   "AA1C1Q05A1LD0/LLN0$GO$gcb_A: 1 messages, 0 changes, issues map[]",
+   "AA1C1Q07A1LD0/LLN0$GO$gcb_A: 1 messages, 0 changes, issues map[]"
+  ],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {
+    "not_ip": 14,
+    "not_tcp": 90,
+    "other_tcp": 77
+   }
+  }
+ },
+ "iti/iec": {
+  "packets": 26,
+  "associations": {
+   "associate/conclude": 1,
+   "midstream/conclude": 1
+  },
+  "statuses": {
+   "ok": 2,
+   "orphan": 2
+  },
+  "services": {
+   "": 2,
+   "Write": 2
+  },
+  "reports": 0,
+  "decode_errors": 3,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 2,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "iti/m-send-req.mms.pcap": {
+  "packets": 21,
+  "associations": {},
+  "statuses": {},
+  "services": {},
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {
+    "other_tcp": 21
+   }
+  }
+ },
+ "iti/piccolo.pcap": {
+  "packets": 5,
+  "associations": {
+   "associate/": 1
+  },
+  "statuses": {
+   "ok": 1,
+   "pending": 1
+  },
+  "services": {
+   "Identify": 1,
+   "Status": 1
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "qut-zss-2023-mms/Action_1.pcapng": {
+  "packets": 446,
+  "associations": {
+   "associate/disconnect": 30
+  },
+  "statuses": {
+   "ok": 30
+  },
+  "services": {
+   "GetNameList": 30
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {
+    "not_ip": 16,
+    "other_tcp": 10
+   }
+  }
+ },
+ "qut-zss-2023-mms/Action_2.pcapng": {
+  "packets": 437,
+  "associations": {
+   "associate/disconnect": 30
+  },
+  "statuses": {
+   "ok": 30
+  },
+  "services": {
+   "Identify": 30
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {
+    "not_ip": 12,
+    "other_tcp": 5
+   }
+  }
+ },
+ "qut-zss-2023-mms/Action_3.pcapng": {
+  "packets": 596,
+  "associations": {
+   "associate/disconnect": 30
+  },
+  "statuses": {
+   "ok": 60
+  },
+  "services": {
+   "GetNameList": 60
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {
+    "not_ip": 14,
+    "other_tcp": 11
+   }
+  }
+ },
+ "qut-zss-2023-mms/Action_4.pcapng": {
+  "packets": 1718,
+  "associations": {
+   "associate/disconnect": 30
+  },
+  "statuses": {
+   "ok": 570
+  },
+  "services": {
+   "GetVariableAccessAttributes": 150,
+   "Read": 240,
+   "Write": 180
+  },
+  "reports": 90,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {
+    "not_ip": 8,
+    "not_tcp": 2,
+    "other_tcp": 20
+   }
+  }
+ },
+ "qut-zss-2023-mms/Action_5.pcapng": {
+  "packets": 588,
+  "associations": {
+   "associate/disconnect": 42
+  },
+  "statuses": {
+   "reject": 42
+  },
+  "services": {
+   "ReadJournal": 42
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {}
+  }
+ },
+ "qut-zss-2023-mms/Action_6.pcapng": {
+  "packets": 437,
+  "associations": {
+   "associate/disconnect": 30
+  },
+  "statuses": {
+   "error": 30
+  },
+  "services": {
+   "FileDirectory": 30
+  },
+  "reports": 0,
+  "decode_errors": 0,
+  "goose": [],
+  "sv": [],
+  "counters": {
+   "bare_mms": 0,
+   "cotp_errors": 0,
+   "goose_errors": 0,
+   "sv_errors": 0,
+   "tpkt_resync": 0,
+   "tsdu_errors": 0,
+   "tso_segments": 0,
+   "unsupported": {
+    "not_ip": 12,
+    "other_tcp": 5
+   }
+  }
+ }
+}

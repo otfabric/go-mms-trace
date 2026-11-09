@@ -1,0 +1,10 @@
+file,time,association,invoke_id,service,status,latency_ms,object,request_frame,response_frame,error_class,error_code
+../../testdata/substation.pcap,2026-11-09T12:00:00.011000000Z,1,1,Identify,ok,1.000,OT Fabric trace 1,11,12,,
+../../testdata/substation.pcap,2026-11-09T12:00:00.013000000Z,1,2,Read,ok,1.000,LD0/MMXU1$MX$Hz,13,14,,
+../../testdata/substation.pcap,2026-11-09T12:00:00.015000000Z,1,3,Write,ok,1.000,LD0/MMXU1$MX$Hz,15,16,,
+../../testdata/substation.pcap,2026-11-09T12:00:00.017000000Z,1,4,GetNameList,ok,1.000,class 0 in LD0,17,18,,
+../../testdata/substation.pcap,2026-11-09T12:00:00.019000000Z,1,5,FileDelete,error,1.000,,19,20,0,4
+../../testdata/substation.pcap,2026-11-09T12:00:00.045000000Z,3,1,Read,ok,1.000,LD0/MMXU1$MX$Hz,45,46,,
+../../testdata/substation.pcap,2026-11-09T12:00:00.047000000Z,3,2,Read,unanswered,,LD0/MMXU1$MX$Hz,47,,,
+../../testdata/substation.pcap,2026-11-09T12:00:00.048000000Z,3,3,Read,orphan,,,,48,,
+../../testdata/substation.pcap,2026-11-09T12:00:00.060000000Z,4,1,Read,pending,,LD0/MMXU1$MX$Hz,60,,,

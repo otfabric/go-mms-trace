@@ -1,0 +1,5 @@
+{"operation":"read-ctlmodel","target":"InteropIEDInteropLD/GGIO1.SPCSO2.ctlModel[CF]","ok":true,"value":2}
+{"operation":"select","target":"InteropIEDInteropLD/GGIO1.SPCSO2","ok":true}
+{"operation":"operate","target":"InteropIEDInteropLD/GGIO1.SPCSO2","ok":true,"ctlval":true}
+{"operation":"read-stval","target":"InteropIEDInteropLD/GGIO1.SPCSO2.stVal[ST]","ok":true,"value":true}
+{"operation":"conclude","ok":true}

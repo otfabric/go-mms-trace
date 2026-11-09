@@ -1,0 +1,14 @@
+file           ../../testdata/substation.pcap
+format         pcap, 6768 bytes, 61 packets
+interfaces     1 (ethernet)
+sha256         45d605515eb57c0264ccca1c548ed7d5819e0793ed37eb82c37f07ac3f6df220
+first          2026-11-09T12:00:00.001000Z
+last           2026-11-09T12:00:00.061000Z
+associations   4
+transactions   9 (ok=5, error=1, unanswered=1, orphan=1, pending=1)
+services       FileDelete=1, GetNameList=1, Identify=1, Read=5, Write=1
+reports        1
+goose streams  1
+sv streams     1
+counters       tpkt_resync=0, cotp_errors=0, tsdu_errors=0, bare_mms=0, tso_segments=0, goose_errors=0, sv_errors=0
+unsupported    other_tcp=1

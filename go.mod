@@ -1,0 +1,14 @@
+module github.com/otfabric/go-mms-trace
+
+go 1.26.0
+
+require (
+	github.com/otfabric/go-cotp v1.3.0
+	github.com/otfabric/go-iec61850 v1.14.0
+	github.com/otfabric/go-mms v1.6.1-0.20261109221123-a5943c7265c2
+)
+
+require (
+	github.com/otfabric/go-tpkt v1.1.0 // indirect
+	golang.org/x/sys v0.44.0 // indirect
+)

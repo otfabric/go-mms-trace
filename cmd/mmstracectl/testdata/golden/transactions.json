@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "files": [
+    {
+      "file": "../../testdata/substation.pcap",
+      "transactions": [
+        {
+          "time": "2026-11-09T12:00:00.011Z",
+          "association": 1,
+          "invoke_id": 1,
+          "service": "Identify",
+          "status": "ok",
+          "latency_ms": 1,
+          "object": "OT Fabric trace 1",
+          "request_frame": 11,
+          "response_frame": 12
+        },
+        {
+          "time": "2026-11-09T12:00:00.013Z",
+          "association": 1,
+          "invoke_id": 2,
+          "service": "Read",
+          "status": "ok",
+          "latency_ms": 1,
+          "object": "LD0/MMXU1$MX$Hz",
+          "request_frame": 13,
+          "response_frame": 14
+        },
+        {
+          "time": "2026-11-09T12:00:00.015Z",
+          "association": 1,
+          "invoke_id": 3,
+          "service": "Write",
+          "status": "ok",
+          "latency_ms": 1,
+          "object": "LD0/MMXU1$MX$Hz",
+          "request_frame": 15,
+          "response_frame": 16
+        },
+        {
+          "time": "2026-11-09T12:00:00.017Z",
+          "association": 1,
+          "invoke_id": 4,
+          "service": "GetNameList",
+          "status": "ok",
+          "latency_ms": 1,
+          "object": "class 0 in LD0",
+          "request_frame": 17,
+          "response_frame": 18
+        },
+        {
+          "time": "2026-11-09T12:00:00.019Z",
+          "association": 1,
+          "invoke_id": 5,
+          "service": "FileDelete",
+          "status": "error",
+          "latency_ms": 1,
+          "object": "",
+          "request_frame": 19,
+          "response_frame": 20,
+          "error": {
+            "class": 0,
+            "code": 4
+          }
+        },
+        {
+          "time": "2026-11-09T12:00:00.045Z",
+          "association": 3,
+          "invoke_id": 1,
+          "service": "Read",
+          "status": "ok",
+          "latency_ms": 1,
+          "object": "LD0/MMXU1$MX$Hz",
+          "request_frame": 45,
+          "response_frame": 46
+        },
+        {
+          "time": "2026-11-09T12:00:00.047Z",
+          "association": 3,
+          "invoke_id": 2,
+          "service": "Read",
+          "status": "unanswered",
+          "latency_ms": null,
+          "object": "LD0/MMXU1$MX$Hz",
+          "request_frame": 47
+        },
+        {
+          "time": "2026-11-09T12:00:00.048Z",
+          "association": 3,
+          "invoke_id": 3,
+          "service": "Read",
+          "status": "orphan",
+          "latency_ms": null,
+          "object": "",
+          "response_frame": 48
+        },
+        {
+          "time": "2026-11-09T12:00:00.06Z",
+          "association": 4,
+          "invoke_id": 1,
+          "service": "Read",
+          "status": "pending",
+          "latency_ms": null,
+          "object": "LD0/MMXU1$MX$Hz",
+          "request_frame": 60
+        }
+      ]
+    }
+  ]
+}

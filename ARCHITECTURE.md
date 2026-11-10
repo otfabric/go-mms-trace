@@ -83,7 +83,7 @@ Frames of the Ethernet link type (after any 802.1Q, 802.1ad or 0x9100 tags) with
 
 | Module | Used for |
 |---|---|
-| github.com/otfabric/go-mms v1.7.1 | `mms.DecodeTSDU` and the `mms.Captured*` types; tests also run real go-mms clients and servers (`transport/iso`) to record associations |
+| github.com/otfabric/go-mms v1.7.2 | `mms.DecodeTSDU` and the `mms.Captured*` types; tests also run real go-mms clients and servers (`transport/iso`) to record associations |
 | github.com/otfabric/go-cotp v1.3.0 | `cotp.Decode` (it requires go-tpkt v1.1.0) |
 | github.com/otfabric/go-iec61850 v1.15.2 | `goose.Decode`, `sv.Decode` |
 

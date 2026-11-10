@@ -1,5 +1,16 @@
 # go-mms-trace Releases
 
+## v0.1.3
+
+**Date:** 2026-11-10
+**Previous release:** v0.1.2
+
+### Changed
+
+- **Built on go-mms v1.7.2** (was v1.7.1), in the library and in `mmstracectl`. A TimeOfDay (BinaryTime) whose millisecond field is one day or more now decodes instead of failing the whole PDU: ISO 9506-2:2003 §7.5.1 only requires bits 28–31 to be zero, so a 4-octet value keeps the field as is (up to 2^28−1 ms, a deadline past midnight) and a 6-octet value carries it into the following days. A field with bits 28–31 set is rejected (otfabric/go-mms#30). In a capture, such a PDU is now decoded instead of being reported with a decode error.
+
+---
+
 ## v0.1.2
 
 **Date:** 2026-11-10

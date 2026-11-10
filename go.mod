@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/otfabric/go-cotp v1.3.0
 	github.com/otfabric/go-iec61850 v1.15.2
-	github.com/otfabric/go-mms v1.7.1
+	github.com/otfabric/go-mms v1.7.2
 )
 
 require (

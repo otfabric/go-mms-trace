@@ -3,12 +3,12 @@ github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/otfabric/go-cotp v1.3.0 h1:IXfqzdt86GPg6+il9g2GIWLFFmtNuVBMiE2ceLrXJpo=
 github.com/otfabric/go-cotp v1.3.0/go.mod h1:0XVoeSHnOPj8XWI484tUC2U6dbaKCtVk0z18MipM37s=
-github.com/otfabric/go-iec61850 v1.15.2 h1:V/2hqKz3+zIMe5C5yj9FDu9XaeGGeCMPHbQyMccuvBo=
-github.com/otfabric/go-iec61850 v1.15.2/go.mod h1:5yMecWO7sX3Rmlw8yiZPdzIcEv1HQau5IvKbDxWjkdQ=
+github.com/otfabric/go-iec61850 v1.16.2 h1:/XFy4j5ao3n8aFrvfnKxwmIAooAJ4EYrxuzMlj5HDrg=
+github.com/otfabric/go-iec61850 v1.16.2/go.mod h1:DgvzFGHgloXu9+Ab+f8UFtNDo2ysQrBNo3ehasl5d2A=
 github.com/otfabric/go-mms v1.7.2 h1:fpvn9+5GIFA3+a+NQMSLigHmxqPiu0BbB/xmPiTvoNo=
 github.com/otfabric/go-mms v1.7.2/go.mod h1:jnTh0K95bqNCQtdTBkBG/rMmGPeooYoABQa9Sqq3Zio=
-github.com/otfabric/go-mms-trace v0.1.1 h1:uk5O8EEFdTg4997V9xhZ5/hHBU6sMLwBXBpwEBDcgOw=
-github.com/otfabric/go-mms-trace v0.1.1/go.mod h1:Bc2X808TMhHqQvkDsii9T2s6LTRy0wEJlRw8/mz5Yog=
+github.com/otfabric/go-mms-trace v0.1.3 h1:9JXoeETY8sJRDlf/OwgqVQoM5IGI/eWnA3OIt3CzjWs=
+github.com/otfabric/go-mms-trace v0.1.3/go.mod h1:lk/CJJkuLbrgjoDhYghC/fUcIoJsd04kS52YmYZcLBA=
 github.com/otfabric/go-tpkt v1.1.0 h1:KTCQePVqqnvDB0A3O4ReRqfa5jJ3jnsEYNUdS91vD4o=
 github.com/otfabric/go-tpkt v1.1.0/go.mod h1:qGkrTZ03mIwhCQZCL9S3OaOAVyw9TVdZXJf1lSYRLog=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=

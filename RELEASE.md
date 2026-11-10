@@ -1,5 +1,17 @@
 # go-mms-trace Releases
 
+## v0.1.4
+
+**Date:** 2026-11-10
+**Previous release:** v0.1.3
+
+### Changed
+
+- Built on go-iec61850 v1.16.2 (was v1.15.2), for `goose.Decode` and `sv.Decode`. v1.15.2 to v1.16.2 do not change those decoders.
+- `mmstracectl` is built on go-mms-trace v0.1.3 (was v0.1.1) and go-iec61850 v1.16.2, so it carries the go-mms v1.7.2 TimeOfDay decoding of v0.1.3.
+
+---
+
 ## v0.1.3
 
 **Date:** 2026-11-10

@@ -1,5 +1,16 @@
 # go-mms-trace Releases
 
+## v0.3.0
+
+**Date:** 2026-11-11
+**Previous release:** v0.2.1
+
+### Changed
+
+- **Built on go-mms v1.9.0 and go-iec61850 v1.19.0** (were v1.8.0 and v1.17.1), in the library and in `mmstracectl`. The decoding of captures is unchanged. go-mms v1.9.0 enforces the negotiated outstanding-request and nesting limits in its client; go-iec61850 v1.18.0 adds R-GOOSE/R-SV, setting group value banks, BufTm, control checks and an injectable clock, and changes report timing (see their release notes).
+
+---
+
 ## v0.2.1
 
 **Date:** 2026-11-11

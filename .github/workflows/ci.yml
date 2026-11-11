@@ -20,7 +20,7 @@ permissions:
 jobs:
   # Organisation checks: format, lint, vet, vulnerabilities, race tests, coverage.
   ci:
-    uses: otfabric/.github/.github/workflows/go-ci.yml@v3.3.0
+    uses: otfabric/.github/.github/workflows/go-ci.yml@v3.6.0
     with:
       run-govulncheck: true
       coverage-min: "90"
@@ -30,19 +30,23 @@ jobs:
       test-exclude-regex: "/example(s)?($|/)"
       codecov-name: go-mms-trace
       go-versions: '["1.26", "1.27"]'
-      policy-version: v1.4.2
+      policy-version: v1.5.0
+      # The shared default (v2.1.6) predates Go 1.26; the version `make lint` is checked with.
+      golangci-lint-version: v2.15.0
     secrets: inherit
 
   # The CLI is a nested module.
   cli:
-    uses: otfabric/.github/.github/workflows/go-ci.yml@v3.3.0
+    uses: otfabric/.github/.github/workflows/go-ci.yml@v3.6.0
     with:
       module-dir: cmd/mmstracectl
       coverage-min: "90"
       test-exclude-regex: "/example(s)?($|/)"
       run-codecov: false
       go-versions: '["1.26", "1.27"]'
-      policy-version: v1.4.2
+      policy-version: v1.5.0
+      # The shared default (v2.1.6) predates Go 1.26; the version `make lint` is checked with.
+      golangci-lint-version: v2.15.0
     secrets: inherit
 
   # Every target builds and tests with CGO_ENABLED=0 on a runner of its own

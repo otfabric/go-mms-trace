@@ -13,20 +13,20 @@ permissions:
 jobs:
   docs:
     name: Docs (library)
-    uses: otfabric/.github/.github/workflows/docs-check.yml@v3.5.0
+    uses: otfabric/.github/.github/workflows/docs-check.yml@v3.6.0
     with:
       docsync-version: v0.3.1
       # No policy.yml in this repository: this job runs otfabric-policy, so
       # Markdown-only changes still get the Policy check.
-      policy-version: v1.4.2
+      policy-version: v1.5.0
     secrets: inherit
 
   docs-cli:
     name: Docs (cmd/mmstracectl)
-    uses: otfabric/.github/.github/workflows/docs-check.yml@v3.5.0
+    uses: otfabric/.github/.github/workflows/docs-check.yml@v3.6.0
     with:
       module-dir: cmd/mmstracectl
       docsync-version: v0.3.1
-      policy-version: v1.4.2
+      policy-version: v1.5.0
       run-policy: false
     secrets: inherit

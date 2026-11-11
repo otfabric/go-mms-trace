@@ -1337,7 +1337,7 @@
    "Write": 1
   },
   "reports": 0,
-  "decode_errors": 1,
+  "decode_errors": 2,
   "goose": [],
   "sv": [],
   "counters": {
@@ -1821,7 +1821,7 @@
    "Write": 2
   },
   "reports": 0,
-  "decode_errors": 3,
+  "decode_errors": 4,
   "goose": [],
   "sv": [],
   "counters": {

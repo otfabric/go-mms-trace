@@ -1,5 +1,17 @@
 # go-mms-trace Releases
 
+## v0.3.2
+
+**Date:** 2026-11-12
+**Previous release:** v0.3.1
+
+### Changed
+
+- **Built on go-mms v1.9.1 and go-iec61850 v1.19.1** (were v1.9.0 and v1.19.0), in the library and in `mmstracectl`: range-checked integer conversions and Close-race fixes upstream. The decoding of captures is unchanged.
+- CI: shared workflows otfabric/.github v3.6.0 (were v3.3.0 and v3.5.0), otfabric-policy v1.5.0 (was v1.4.2), and golangci-lint v2.15.0 instead of the shared default v2.1.6.
+
+---
+
 ## v0.3.1
 
 **Date:** 2026-11-11

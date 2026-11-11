@@ -76,7 +76,7 @@ func TestAnalyzeAssociation(t *testing.T) {
 			t.Fatalf("associations = %+v", res.Associations)
 		}
 		as := res.Associations[0]
-		if as.Open != "associate" || as.Close != "conclude" || as.Accepted == nil || !*as.Accepted || as.Initiate == nil ||
+		if as.Open != "associate" || as.Close != "release" || as.Accepted == nil || !*as.Accepted || as.Initiate == nil ||
 			as.Server.Port() != 102 || as.Client.Port() != 40000 || as.Gaps != 0 || string(as.CalledTSAP) != "\x00\x01" || as.Authentication != "none" {
 			t.Errorf("association = %+v", as)
 		}
@@ -87,7 +87,7 @@ func TestAnalyzeAssociation(t *testing.T) {
 				t.Errorf("%s latency %d", tr.Service, tr.LatencyNS())
 			}
 		}
-		for svc, status := range map[string]string{"Identify": StatusOK, "Read": StatusOK, "Write": StatusOK, "GetNameList": StatusOK, "FileDelete": StatusError} {
+		for svc, status := range map[string]string{"Identify": StatusOK, "Read": StatusOK, "Write": StatusOK, "GetNameList": StatusOK, "FileDelete": StatusReject} {
 			if tr := byService[svc]; tr == nil || tr.Status != status {
 				t.Errorf("split=%v %s = %+v", split, svc, tr)
 			}

@@ -1,5 +1,19 @@
 # go-mms-trace Releases
 
+## v0.2.0
+
+**Date:** 2026-11-11
+**Previous release:** v0.1.4
+
+### Changed
+
+- **Built on go-mms v1.8.0 and go-iec61850 v1.17.1** (were v1.7.2 and v1.16.2), in the library and in `mmstracectl`. These are the ISO 9506 and IEC 61850 spec-review releases. What changes in an analysis:
+- The confirmed-service CHOICE must be context-specific. A response whose service element is a universal SEQUENCE, such as the Write response `a1 05 02 01 00 30 00` in the public iti captures, is now reported with a decode error; it was decoded before. `testdata/captures/public/expected.json` records one more decode error each for `iti/iec` and `iti/MMS_Specific_Commands/iec61850_write.pcap`.
+- Receive accepts BER as X.690 allows (non-minimal lengths and INTEGERs, indefinite length), and ServiceError and Reject PDUs are decoded in full.
+- Captures of a go-mms v1.8.0 client end in `release` (Conclude, then A-RELEASE) rather than `conclude`, and a go-mms server answers an unsupported service with a Reject (`reject` status) rather than a ConfirmedError.
+
+---
+
 ## v0.1.4
 
 **Date:** 2026-11-10

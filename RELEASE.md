@@ -1,5 +1,16 @@
 # go-mms-trace Releases
 
+## v0.2.1
+
+**Date:** 2026-11-11
+**Previous release:** v0.2.0
+
+### Changed
+
+- `mmstracectl` is built on go-mms-trace v0.2.0 (was v0.1.3), so the CLI carries the go-mms v1.8.0 decoding of v0.2.0.
+
+---
+
 ## v0.2.0
 
 **Date:** 2026-11-11

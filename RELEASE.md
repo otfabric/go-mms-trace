@@ -1,5 +1,16 @@
 # go-mms-trace Releases
 
+## v0.3.1
+
+**Date:** 2026-11-11
+**Previous release:** v0.3.0
+
+### Changed
+
+- `mmstracectl` is built on go-mms-trace v0.3.0 (was v0.2.0).
+
+---
+
 ## v0.3.0
 
 **Date:** 2026-11-11

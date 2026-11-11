@@ -7,8 +7,8 @@ github.com/otfabric/go-iec61850 v1.17.1 h1:69zjFf43sjSQNv6zNKG/41zzYxRpDzQH45gcj
 github.com/otfabric/go-iec61850 v1.17.1/go.mod h1:fu+y4TqXPRor3BFyrBP3ggtQBTKMVN5dD70QcsjerQ8=
 github.com/otfabric/go-mms v1.8.0 h1:gGFsmTxSCpMaZYkETTywVSwxriHKCn0+Ann+UXFhnLA=
 github.com/otfabric/go-mms v1.8.0/go.mod h1:jnTh0K95bqNCQtdTBkBG/rMmGPeooYoABQa9Sqq3Zio=
-github.com/otfabric/go-mms-trace v0.1.3 h1:9JXoeETY8sJRDlf/OwgqVQoM5IGI/eWnA3OIt3CzjWs=
-github.com/otfabric/go-mms-trace v0.1.3/go.mod h1:lk/CJJkuLbrgjoDhYghC/fUcIoJsd04kS52YmYZcLBA=
+github.com/otfabric/go-mms-trace v0.2.0 h1:KNGvFZn/SurOnwEfo3x0K2hkaXzKwUKFjnrdIPEW2b0=
+github.com/otfabric/go-mms-trace v0.2.0/go.mod h1:R27fOlsyLvtSi7okjBhzLT+rShoqVUEjINv0yTzc33g=
 github.com/otfabric/go-tpkt v1.1.0 h1:KTCQePVqqnvDB0A3O4ReRqfa5jJ3jnsEYNUdS91vD4o=
 github.com/otfabric/go-tpkt v1.1.0/go.mod h1:qGkrTZ03mIwhCQZCL9S3OaOAVyw9TVdZXJf1lSYRLog=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=

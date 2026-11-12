@@ -1,5 +1,19 @@
 # go-mms-trace Releases
 
+## v0.3.4
+
+**Date:** 2026-11-12
+**Previous release:** v0.3.3
+
+No API change.
+
+### Changed
+
+- go-mms v1.9.2 and go-iec61850 v1.19.4 (were v1.9.1 and v1.19.1). go-mms v1.9.2 makes the `iso.WithDialer` dialer follow the `net.Dialer` contract.
+- `mmstracectl` is built on go-mms-trace v0.3.3, go-mms v1.9.2 and go-iec61850 v1.19.4.
+
+---
+
 ## v0.3.3
 
 **Date:** 2026-11-12

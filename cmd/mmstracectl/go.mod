@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/otfabric/go-mms v1.9.2
-	github.com/otfabric/go-mms-trace v0.3.4
+	github.com/otfabric/go-mms-trace v0.3.5
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.9
 )

@@ -83,8 +83,8 @@ Frames of the Ethernet link type (after any 802.1Q, 802.1ad or 0x9100 tags) with
 
 | Module | Used for |
 |---|---|
-| github.com/otfabric/go-mms v1.7.2 | `mms.DecodeTSDU` and the `mms.Captured*` types; tests also run real go-mms clients and servers (`transport/iso`) to record associations |
-| github.com/otfabric/go-cotp v1.3.0 | `cotp.Decode` (it requires go-tpkt v1.1.0) |
-| github.com/otfabric/go-iec61850 v1.16.2 | `goose.Decode`, `sv.Decode` |
+| github.com/otfabric/go-mms v1.10.0 | `mms.DecodeTSDU` and the `mms.Captured*` types; tests also run real go-mms clients and servers (`transport/iso`) to record associations |
+| github.com/otfabric/go-cotp v1.4.1 | `cotp.Decode` (it requires go-tpkt v1.2.1) |
+| github.com/otfabric/go-iec61850 v1.22.0 | `goose.Decode`, `sv.Decode` |
 
 The library opens no socket and runs no program; `depguard` and `forbidigo` in `.golangci.yml` enforce it for non-test code. go-iec61850's `goose` and `sv` packages also implement live capture and so link `golang.org/x/sys/unix`; the library calls only their decoders ([LIMITATIONS.md](LIMITATIONS.md)).

@@ -1,5 +1,19 @@
 # go-mms-trace Releases
 
+## v0.3.7
+
+**Date:** 2026-11-14
+**Previous release:** v0.3.6
+
+No API change.
+
+### Changed
+
+- go-mms v1.10.0 (was v1.9.3), go-iec61850 v1.22.0 (was v1.20.2), go-cotp v1.4.1 (was v1.3.0) and go-tpkt v1.2.1 (was v1.1.0). Decoding is stricter: go-mms v1.10.0 decodes Data to at most 64 nesting levels, limits a Write request's listOfData to 65,536 elements and refuses an object identifier subidentifier with a leading 0x80 octet, and go-iec61850 v1.22.0 refuses an SV `svID` or `datSet` longer than 129 octets. A TSDU or SV frame outside these bounds is now counted in `TSDUErrors` or `SVErrors`; the server, client and SCL limits of the new releases are not used by this module.
+- `mmstracectl` is built on go-mms-trace v0.3.5, go-mms v1.10.0 and go-iec61850 v1.22.0.
+
+---
+
 ## v0.3.6
 
 **Date:** 2026-11-14

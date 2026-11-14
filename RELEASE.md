@@ -1,5 +1,20 @@
 # go-mms-trace Releases
 
+## v0.3.5
+
+**Date:** 2026-11-14
+**Previous release:** v0.3.4
+
+No API change.
+
+### Changed
+
+- go-iec61850 v1.20.1 (was v1.19.4). v1.20.0 added the sender address of R-GOOSE and R-SV frames (`rsession.Transport.RecvFrom`); the library code of v1.20.1 is the same as v1.20.0.
+- `mmstracectl` is built on go-mms-trace v0.3.4 (was v0.3.3), go-mms v1.9.2 and go-iec61850 v1.20.1.
+- CI: otfabric/engineering policy 1.6 and the shared workflows v3.8.0. Releases now run the API compatibility gate before tagging.
+
+---
+
 ## v0.3.4
 
 **Date:** 2026-11-12

@@ -57,4 +57,15 @@ Both are written by `TestFixture` in `trace/fixture_test.go` (`go test ./trace -
 
 ## 6. CI
 
-`.github/workflows/ci.yml` runs on every push and pull request that changes more than Markdown: the organisation's `go-ci.yml` (v3.3.0) for the library and for `cmd/mmstracectl` (golangci-lint, go vet, govulncheck, tests and race tests on Go 1.26 and 1.27, coverage, fuzz smoke for the library, the policy check), and a build and test on each target in its own runner (linux/arm v7 is cross-compiled only, not run), with a static-binary check on Linux. `.github/workflows/docs.yml` runs docsync on every pull request, Markdown-only included. `make compare-wireshark` and `make record-interop` are not run in CI.
+`.github/workflows/pr.yml` calls `.github/workflows/ci.yml` on every pull request that changes more than Markdown: the organisation's `go-ci.yml` (v3.8.0) for the library and for `cmd/mmstracectl` (golangci-lint, go vet, govulncheck, tests and race tests on Go 1.26 and 1.27, coverage, fuzz smoke for the library), and a build and test on each target in its own runner (linux/arm v7 is cross-compiled only, not run), with a static-binary check on Linux. `.github/workflows/docs.yml` runs docsync and otfabric-policy on every pull request, Markdown-only included, and on every push to `main`. `make compare-wireshark` and `make record-interop` are not run in CI.
+
+## When CI runs
+
+| Event | Workflow | What runs |
+|---|---|---|
+| Pull request | `pr.yml` | `docs.yml` (docsync, otfabric-policy) always; `ci.yml` unless every changed file is documentation; then `OT Fabric Required Checks` |
+| Push to a branch | none | nothing; dispatch `ci.yml` to test a branch without a pull request |
+| Push to `main` | `docs.yml` | the light checks; the merged commit was tested as the pull request's merge commit |
+| Release | `release.yml` | the release workflow tests the release commit again |
+
+Documentation means an added or modified `*.md` file outside `.github/`, `testdata/` and `vendor/`, other than `AGENTS.md` and `CLAUDE.md`. A deleted or renamed document, or any other file, runs everything. `OT Fabric Required Checks` fails unless every job that applies succeeded; its summary lists them.

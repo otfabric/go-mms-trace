@@ -8,7 +8,7 @@ A pure-Go library and CLI that read **packet captures** (pcap and pcapng, plain 
 
 ## Organisation standards
 
-This repository follows **otfabric/engineering policy 1.5**, profile **protocol-library** (`.otfabric/policy.yaml`); CI runs otfabric-policy v1.5.0. Organisation skills come from the `otfabric` plugin. There are no local exceptions (no `.otfabric/exceptions.yaml`). Where this file and the organisation standards disagree, this file wins for this repository — say so in your report.
+This repository follows **otfabric/engineering policy 1.6**, profile **protocol-library** (`.otfabric/policy.yaml`); CI runs otfabric-policy v1.5.0. Organisation skills come from the `otfabric` plugin. There are no local exceptions (no `.otfabric/exceptions.yaml`). Where this file and the organisation standards disagree, this file wins for this repository — say so in your report.
 
 ## Read these, in this order
 

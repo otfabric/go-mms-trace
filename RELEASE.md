@@ -1,5 +1,19 @@
 # go-mms-trace Releases
 
+## v0.3.6
+
+**Date:** 2026-11-14
+**Previous release:** v0.3.5
+
+No API change.
+
+### Changed
+
+- go-mms v1.9.3 (was v1.9.2) and go-iec61850 v1.20.2 (was v1.20.1). go-mms v1.9.3 bounds counts, indexes and REAL exponents when they are decoded (go-mms RELEASE.md, v1.9.3); the go-iec61850 library code is unchanged.
+- `mmstracectl` is built on go-mms-trace v0.3.5, go-mms v1.9.3 and go-iec61850 v1.20.2.
+
+---
+
 ## v0.3.5
 
 **Date:** 2026-11-14

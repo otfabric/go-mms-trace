@@ -7,6 +7,7 @@
       "gzip": false,
       "sha256": "45d605515eb57c0264ccca1c548ed7d5819e0793ed37eb82c37f07ac3f6df220",
       "input_bytes": 6768,
+      "uncompressed_bytes": 6768,
       "packets": 61,
       "interfaces": 1,
       "links": [
@@ -16,6 +17,7 @@
       "last": "2026-11-09T12:00:00.061Z",
       "truncated_tail": false,
       "skipped_blocks": 0,
+      "bad_timestamps": 0,
       "associations": 4,
       "transactions": 9,
       "statuses": {

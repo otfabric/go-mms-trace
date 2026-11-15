@@ -19,7 +19,7 @@ Install it with the one-line installer: see [Install mmstracectl](../../README.m
 | `mmstracectl version` | Print the version |
 | `mmstracectl completion bash\|zsh\|fish\|powershell` | Generate the shell completion script |
 
-A capture argument is a path, or `-` for standard input (alone). Several captures are analysed one by one, and all of them are read before anything is written: `info` text starts each capture with its `file` line, the other text tables get a `==> name <==` line per capture, CSV has a `file` column, JSON a `files` array. A capture that cannot be opened or is not a capture stops the command before any output; a damaged one is reported with what was read before the damage ([docs/exitcodes.md](docs/exitcodes.md)).
+A capture argument is a path, or `-` for standard input (alone). Several captures are analysed one by one, and all of them are read before anything is written: `info` text starts each capture with its `file` line, the other text tables get a `==> name <==` line per capture, CSV has a `file` column, JSON a `files` array. A capture that cannot be opened or is not a capture stops the command before any output; a damaged one, and one that goes on past `--max-bytes`, is reported with what was read of it ([docs/exitcodes.md](docs/exitcodes.md)).
 
 ## Flags
 
@@ -27,9 +27,10 @@ A capture argument is a path, or `-` for standard input (alone). Several capture
 |---|---|---|---|
 | `--format` | all | `text` | `text` or `json`; also `csv` for `transactions`, `reports`, `goose` and `sv` |
 | `--port` | all but `version` | `102` | TCP ports of MMS servers, comma-separated (1 to 65535, at least one) |
-| `--max-packet` | all but `version` | `0` | Largest packet record read, bytes (0: 256 KiB; negative is a usage error) |
+| `--max-packet` | all but `version` | `0` | Largest packet record read, bytes (0: 256 KiB; negative is a usage error; a value above 4 GiB bounds nothing) |
+| `--max-bytes` | all but `version` | `0` | Most bytes of a capture read, counted after decompression (0: 16 GiB; negative is a usage error). A capture that goes on past it is printed up to there, then the command exits 3 |
 | `--service` | `transactions` | | Only these services (`Read`, `Write`, `GetNameList`, ...; any case) |
-| `--status` | `transactions` | | Only these statuses: `ok`, `error`, `reject`, `unanswered`, `orphan`, `pending` |
+| `--status` | `transactions` | | Only these statuses: `ok`, `error`, `reject`, `uncertain`, `unanswered`, `orphan`, `pending` |
 | `--assoc` | `transactions` | | Only these association IDs (from 1) |
 | `-h`, `--help` | all | | Help for the command |
 
@@ -38,6 +39,8 @@ Every flag can also be set by an environment variable: `MMSTRACECTL_` and the fl
 ## Output
 
 Text is a table per capture. Times are UTC: microseconds in text, nanoseconds (fixed width) in CSV, RFC 3339 with up to nine fractional digits in JSON; a missing time is `-` in text and empty in CSV. CSV starts with a header row; the `transactions` CSV has the class and code of a confirmed error but not the fields of a reject (use JSON). Object names are written `domain/item` for domain-specific names, `@/item` for association-specific names and `item` for VMD names. The `transactions` object column is taken from the request (from the response of an orphan): the first variable of a Read or Write (`(+n)` for more), `list <name>` for a named variable list, the variable of a GetVariableAccessAttributes request, `class <n> in <domain>` (or `class <n> (<scope>)`) for a GetNameList, or the vendor, model and revision of an Identify response.
+
+**Names of a capture are written as printable text.** Object names, domains, GOOSE and SV references and the strings of an Identify response are bytes of the capture. In text and CSV output every control character in them (the C0 set, DEL and the C1 set) and every byte that is not UTF-8 is written as `\xNN` (an escape character as `\x1b`, a line feed as `\x0a`), so a name is always one cell of one row. A backslash is written as it is, so text and CSV are not exact for such names; JSON is, and escapes the same characters its own way (`\u001b`, `\u007f` to `\u009f`). A CSV cell that starts with `=`, `+`, `-` or `@` is written as it is: import the CSV as text where a spreadsheet would read such a cell as a formula.
 
 `--format json` writes one indented JSON document: [docs/json-output.md](docs/json-output.md). Exit codes: [docs/exitcodes.md](docs/exitcodes.md).
 
@@ -65,6 +68,9 @@ mmstracectl sv testdata/substation.pcap
 
 # MMS on a second port too.
 mmstracectl info testdata/substation.pcap --port 102,10102 --max-packet 65536
+
+# Read at most 1 GiB of a capture, after decompression.
+mmstracectl info testdata/substation.pcap --max-bytes 1073741824
 
 # From a capture on a gateway: output starts when tcpdump stops (here after 10000 packets).
 ssh gw 'tcpdump -i eth0 -c 10000 -U -w - port 102' | mmstracectl transactions -

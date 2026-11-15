@@ -10,7 +10,7 @@
 Read a packet capture (pcap or pcapng, plain or gzip) of IEC 61850 traffic and get what it holds:
 
 - the **MMS associations** over ISO-on-TCP (RFC 1006: TPKT, COTP, session, presentation, ACSE, MMS), with how each was opened and closed, whether it was accepted and which authentication mechanism the AARQ named;
-- their **confirmed services**, request and response paired by invoke ID, with a status (`ok`, `error`, `reject`, `unanswered`, `orphan`, `pending`) and the latency;
+- their **confirmed services**, request and response paired by invoke ID, with a status (`ok`, `error`, `reject`, `uncertain` when the capture lost something in between, `unanswered`, `orphan`, `pending`) and the latency;
 - the unconfirmed **InformationReports** (IEC 61850 reports);
 - the **GOOSE** and **Sampled Values** streams on Ethernet, with their sequencing issues;
 - counters of everything that could not be used.
@@ -49,7 +49,7 @@ Contributors build it from a checkout with `make build` (`./bin/mmstracectl`).
 | `sv CAPTURE...` | the Sampled Values streams with lost and repeated samples |
 | `version` | version, tag, commit, build date, libraries, Go version and platform |
 
-`--format` is `text` (default), `json` (one document per command) or `csv` (`transactions`, `reports`, `goose`, `sv`). `--port` sets the MMS server ports (default 102). Several captures are analysed one by one; `-` reads standard input. Output starts once every capture has been read to its end. Every flag can be set as `MMSTRACECTL_<FLAG>`. Exit codes: 0 success, 2 usage, 3 invalid input (also a damaged capture, after printing what was read), 10 output or internal error, 130 interrupted. Details: [cmd/mmstracectl/README.md](cmd/mmstracectl/README.md).
+`--format` is `text` (default), `json` (one document per command) or `csv` (`transactions`, `reports`, `goose`, `sv`). `--port` sets the MMS server ports (default 102); `--max-bytes` bounds what is read of a capture, counted after decompression (default 16 GiB). Several captures are analysed one by one; `-` reads standard input. Output starts once every capture has been read to its end. Names of a capture are written as printable text: a control character shows as `\xNN`. Every flag can be set as `MMSTRACECTL_<FLAG>`. Exit codes: 0 success, 2 usage, 3 invalid input (also a damaged capture and one past `--max-bytes`, after printing what was read), 10 output or internal error, 130 interrupted. Details: [cmd/mmstracectl/README.md](cmd/mmstracectl/README.md).
 
 ```sh
 # What is in this capture? (testdata/substation.pcap is the generated fixture of a checkout)
@@ -109,7 +109,7 @@ func main() {
 	}
 	defer f.Close()
 	res, err := trace.Analyze(context.Background(), f, trace.Options{})
-	if err != nil && !errors.Is(err, trace.ErrCorrupt) {
+	if err != nil && !errors.Is(err, trace.ErrCorrupt) && !errors.Is(err, trace.ErrLimit) {
 		log.Fatal(err) // not a capture, or cancelled
 	}
 	for _, t := range res.Transactions {
@@ -121,7 +121,7 @@ func main() {
 }
 ```
 
-`trace.Analyze` reads the whole capture and returns a `trace.Result`; there is no streaming API. A damaged file returns what was read before the damage together with an error wrapping `trace.ErrCorrupt`. The transactions keep the decoded PDUs (`mms.CapturedPDU`) of their request and response. The API is in [API.md](API.md).
+`trace.Analyze` reads the whole capture and returns a `trace.Result`; there is no streaming API. A damaged file returns what was read before the damage together with an error wrapping `trace.ErrCorrupt`; a capture larger than `Options.MaxBytes` (16 GiB after decompression by default) returns what was read up to the limit with an error wrapping `trace.ErrLimit`. The transactions keep the decoded PDUs (`mms.CapturedPDU`) of their request and response, so the result grows with the capture: an application that reads captures it does not trust sets `Options.MaxBytes` ([SECURITY.md](SECURITY.md)). The API is in [API.md](API.md).
 
 ## Documentation
 
@@ -134,9 +134,9 @@ func main() {
 | [LIMITATIONS.md](LIMITATIONS.md) | What is not decoded or not proven yet |
 | [docs/FEATURE-STATUS.md](docs/FEATURE-STATUS.md) | Each feature and its evidence level |
 | [INTEROPERABILITY.md](INTEROPERABILITY.md) | Captures between independent stacks, public captures, the Wireshark comparison |
-| [SECURITY.md](SECURITY.md) | Reporting, untrusted input |
+| [SECURITY.md](SECURITY.md) | Reporting, untrusted input, the limits and the memory a result takes |
 | [AGENTS.md](AGENTS.md) | Settled decisions and rules, for contributors and agents |
-| [TESTING.md](TESTING.md) | Generated fixtures, golden files, fuzzing, coverage, CI |
+| [TESTING.md](TESTING.md) | Generated fixtures, golden files, fuzzing, the tests of the limits, contract tests, benchmarks, coverage, CI |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Setup and rules |
 | [RELEASE.md](RELEASE.md) | Release notes |
 | [cmd/mmstracectl/README.md](cmd/mmstracectl/README.md) | The CLI |

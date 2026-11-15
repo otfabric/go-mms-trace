@@ -111,6 +111,11 @@ type Chunk struct {
 	PayOff        int32 // offset of the bytes in the packet's data; -1 after IP reassembly
 	Retransmitted bool  // the packet also carried bytes already delivered (Handler.Repeat reports which)
 	OutOfOrder    bool  // held until an earlier hole was filled
+	// Acked is the stream position of the other direction that the packet
+	// acknowledges, when HasAcked: its sender had received every byte of
+	// the other direction before that position when it sent these bytes.
+	Acked    uint64
+	HasAcked bool
 }
 
 // Handler receives a connection's events. Data's bytes are valid only
@@ -156,7 +161,24 @@ type Conn struct {
 
 	key        key
 	dirs       [2]half
-	prev, next *Conn // LRU list
+	prev, next *Conn  // LRU list
+	stamp      uint64 // order of the last touch: greater is more recent
+	holder     int    // 1 + index in the tracker's heap of connections with held bytes; 0: not in it
+}
+
+// AckedAhead reports whether the peer has acknowledged bytes of direction d
+// that the capture has not delivered (or skipped as a gap) yet: bytes that
+// reached the peer but not the capture, or not yet.
+func (c *Conn) AckedAhead(d int) bool {
+	h := &c.dirs[d]
+	if !h.started || !h.hasPeer {
+		return false
+	}
+	next := h.next
+	if h.fin {
+		next++ // the FIN takes a sequence number
+	}
+	return seqLT(next, h.peerAck)
 }
 
 type key struct{ a, b netip.AddrPort }
@@ -193,6 +215,7 @@ type half struct {
 	fin      bool
 	pend     []pending
 	pendLen  int
+	popped   int // segments delivered from the front of pend's array since it was last made to fit
 	tail     []byte
 	gapEnd   uint64 // stream position where the last gap ended
 	hasGap   bool
@@ -221,6 +244,11 @@ type Tracker struct {
 	pendAll int
 	ids     uint32
 	gapping int // > 0 while gapTo drains: held data follows a skipped hole
+	// holders are the connections with held bytes: a heap whose first is
+	// the one the total budget takes from (largest).
+	holders []*Conn
+	clock   uint64 // touches so far
+	work    uint64 // comparisons made to keep holders in order: the work of the total budget, for its test
 }
 
 // NewTracker returns a tracker. Zero limits take the defaults.
@@ -255,12 +283,19 @@ func (t *Tracker) touch(c *Conn) {
 	c.prev, c.next = &t.lru, t.lru.next
 	t.lru.next.prev = c
 	t.lru.next = c
+	t.clock++
+	c.stamp = t.clock
+	if c.holder != 0 {
+		t.rank(c) // of two connections that hold the same, the more recent comes first
+	}
 }
 
 func (t *Tracker) unlink(c *Conn) {
 	c.prev.next, c.next.prev = c.next, c.prev
 	c.prev, c.next = nil, nil
 	delete(t.conns, c.key)
+	// A connection is ended before it is unlinked, and ending it delivers
+	// what it held, so it is no holder any more.
 }
 
 // Packet feeds one decoded packet and returns the connection it belongs to.
@@ -400,6 +435,8 @@ func (t *Tracker) segment(c *Conn, d int, p *pcapio.Packet, s *link.Segment) {
 			// captured out of order, and makes bytes sent but not captured
 			// before the first captured one a gap.
 			h.started, h.next = true, seq
+			// seqLT says firstAck is less than 2^31 before seq, so the
+			// difference is positive in an int of any width.
 			if h.hasPeer && seqLT(h.firstAck, seq) && int(seq-h.firstAck) <= t.L.BufferPerDir {
 				h.next = h.firstAck
 			}
@@ -407,6 +444,15 @@ func (t *Tracker) segment(c *Conn, d int, p *pcapio.Packet, s *link.Segment) {
 		ch := Chunk{Part: p.Part, Frame: p.Frame, Offset: p.Offset, Iface: p.Iface, TimeNS: p.TimeNS, HasTime: p.HasTime, PayOff: int32(s.PayOff)}
 		if s.PayOff < 0 {
 			ch.PayOff = -1
+		}
+		if s.Flags&link.ACK != 0 && o.started {
+			// o.next is the sequence number of stream position o.pos.
+			ch.HasAcked = true
+			if !seqLT(s.Ack, o.next) {
+				ch.Acked = o.pos + uint64(s.Ack-o.next)
+			} else if back := uint64(o.next - s.Ack); back <= o.pos {
+				ch.Acked = o.pos - back // less than the capture delivered: zero when it is before the stream's start
+			}
 		}
 		t.accept(c, d, seq, s.Payload, s.Missing, ch, false)
 	}
@@ -445,6 +491,9 @@ func (t *Tracker) accept(c *Conn, d int, seq uint32, b []byte, missing uint32, c
 	case seqLT(seq, h.next): // partly new
 		c.Stats.Retransmits++
 		t.repeat(c, d, seq, h.next)
+		// seq is before next and next before end, so cut is less than the
+		// segment's length plus what the snap length cut from it: far below
+		// 2^31, and positive in an int of any width.
 		cut := h.next - seq
 		if int(cut) >= len(b) {
 			t.compare(c, h, seq, b)
@@ -529,32 +578,100 @@ func (t *Tracker) hold(c *Conn, d int, seq uint32, b []byte, missing uint32, ch 
 	h.pend[i] = pending{seq: seq, data: append([]byte(nil), b...), missing: missing, ch: ch, cost: cost}
 	h.pendLen += cost
 	t.pendAll += cost
+	t.rank(c)
+}
+
+// held returns the most bytes the connection holds in one direction.
+func (c *Conn) held() int { return max(c.dirs[0].pendLen, c.dirs[1].pendLen) }
+
+// outranks reports whether c gives up held bytes before x when the total
+// budget is reached: the connection that holds more in one direction, and of
+// two that hold the same the one seen more recently.
+func (c *Conn) outranks(x *Conn) bool {
+	if a, b := c.held(), x.held(); a != b {
+		return a > b
+	}
+	return c.stamp > x.stamp
+}
+
+// rank puts the connection where it belongs among the holders after its
+// held bytes or its last touch changed; a connection that holds nothing
+// leaves them. The cost is a number of comparisons that grows with the
+// logarithm of the connections that hold bytes, never with the connections
+// tracked.
+func (t *Tracker) rank(c *Conn) {
+	hs := t.holders
+	i := c.holder - 1
+	switch {
+	case c.held() == 0 && i < 0:
+		return
+	case c.held() == 0: // leaves: the last one takes its place and is ranked from there
+		n := len(hs) - 1
+		last := hs[n]
+		hs[n] = nil
+		t.holders = hs[:n]
+		c.holder = 0
+		if c == last {
+			return
+		}
+		hs[i] = last
+		last.holder = i + 1
+	case i < 0:
+		t.holders = append(hs, c)
+		i = len(hs)
+		c.holder = i + 1
+	}
+	hs = t.holders
+	for i > 0 { // up
+		up := (i - 1) / 2
+		t.work++
+		if !hs[i].outranks(hs[up]) {
+			break
+		}
+		hs[i], hs[up] = hs[up], hs[i]
+		hs[i].holder, hs[up].holder = i+1, up+1
+		i = up
+	}
+	for { // down
+		first := i
+		for _, k := range [2]int{2*i + 1, 2*i + 2} {
+			if k < len(hs) {
+				t.work++
+				if hs[k].outranks(hs[first]) {
+					first = k
+				}
+			}
+		}
+		if first == i {
+			return
+		}
+		hs[i], hs[first] = hs[first], hs[i]
+		hs[i].holder, hs[first].holder = i+1, first+1
+		i = first
+	}
 }
 
 // largest returns the connection holding the most buffered bytes in one
-// direction (a scan: the budget bites rarely).
+// direction; of several that hold the same, the one seen most recently.
 func (t *Tracker) largest() *Conn {
-	var best *Conn
-	n := 0
-	for c := t.lru.next; c != &t.lru; c = c.next {
-		for d := range c.dirs {
-			if c.dirs[d].pendLen > n {
-				best, n = c, c.dirs[d].pendLen
-			}
-		}
+	if len(t.holders) == 0 {
+		return nil
 	}
-	return best
+	return t.holders[0]
 }
 
 // compare checks bytes at seq, all before next, against the delivered tail.
+// The distance back from next is a 32-bit sequence difference: it is compared
+// as such, and becomes an int only once it is known to lie within the tail
+// and the segment.
 func (t *Tracker) compare(c *Conn, h *half, seq uint32, b []byte) {
-	back := int(h.next - seq)
+	dist := h.next - seq
+	if uint64(dist) >= uint64(len(h.tail))+uint64(len(b)) {
+		return // the segment ends at or before the start of the tail
+	}
+	back := int(dist)
 	if back > len(h.tail) {
-		skip := back - len(h.tail)
-		if skip >= len(b) {
-			return
-		}
-		b, back = b[skip:], len(h.tail)
+		b, back = b[back-len(h.tail):], len(h.tail)
 	}
 	old := h.tail[len(h.tail)-back:]
 	n := min(len(old), len(b))
@@ -569,17 +686,27 @@ func (t *Tracker) drain(c *Conn, d int, filled bool) {
 	h := &c.dirs[d]
 	for len(h.pend) > 0 && !seqLT(h.next, h.pend[0].seq) {
 		q := h.pend[0]
+		h.pend[0] = pending{} // the list's array holds the segment's bytes no longer
 		h.pend = h.pend[1:]
+		h.popped++
 		h.pendLen -= q.cost
 		t.pendAll -= q.cost
+		t.rank(c)
 		if filled && t.gapping == 0 {
 			c.Stats.OutOfOrder++
 			q.ch.OutOfOrder = true
 		}
 		t.accept(c, d, q.seq, q.data, q.missing, q.ch, true)
 	}
-	if len(h.pend) == 0 {
-		h.pend = nil
+	// The array of the list keeps the room of what was delivered from its
+	// front. It is let go with the last segment, and made to fit once that
+	// room is more than what is still held, so that the memory of a list
+	// follows what it holds and what is charged for it.
+	switch {
+	case len(h.pend) == 0:
+		h.pend, h.popped = nil, 0
+	case h.popped > len(h.pend)+16:
+		h.pend, h.popped = append(make([]pending, 0, len(h.pend)), h.pend...), 0
 	}
 }
 

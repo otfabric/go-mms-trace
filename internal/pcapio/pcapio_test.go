@@ -192,8 +192,8 @@ func TestPcapNGTimestamps(t *testing.T) {
 		{19, 10_000_000_000_000_000_000 - 1, 0, 999_999_999}, // largest decimal unit
 	}
 	for _, c := range cases {
-		if got := toNS(c.ts, c.resol, c.offset); got != c.want {
-			t.Errorf("toNS(%d, %#x, %d) = %d, want %d", c.ts, c.resol, c.offset, got, c.want)
+		if got, ok := toNS(c.ts, c.resol, c.offset); got != c.want || !ok {
+			t.Errorf("toNS(%d, %#x, %d) = %d, %v, want %d", c.ts, c.resol, c.offset, got, ok, c.want)
 		}
 	}
 }

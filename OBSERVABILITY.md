@@ -10,14 +10,14 @@ What the analysis observed about its own input, besides the decoded traffic:
 
 | Where | Fields | Documented in |
 |---|---|---|
-| `Result.File` | `Packets`, `InputBytes`, `SHA256`, `TruncatedTail`, `SkippedBlocks`, `Interfaces`, `Links`, `FirstNS`, `LastNS` | [API.md](API.md#file) |
+| `Result.File` | `Packets`, `InputBytes`, `UncompressedBytes`, `SHA256`, `TruncatedTail`, `SkippedBlocks`, `BadTimestamps`, `Interfaces`, `Links`, `FirstNS`, `LastNS` | [API.md](API.md#file) |
 | `Result.Counters` | `Unsupported` by reason, `TPKTResync`, `COTPErrors`, `TSDUErrors`, `BareMMS`, `TSOSegments`, `GOOSEErrors`, `SVErrors` | [ERRORS.md](ERRORS.md#counters) |
 | `Association` | `Gaps`, `Unanswered`, `Open` (`midstream` when the start was not captured), `Close` (empty when the end was not seen) | [API.md](API.md#association) |
-| `Transaction.Status` | `unanswered`, `orphan`, `pending` | [API.md](API.md#transaction) |
+| `Transaction.Status` | `uncertain` (paired across a loss), `unanswered`, `orphan`, `pending` | [API.md](API.md#transaction) |
 | `mms.CapturedPDU.DecodeError` | a PDU whose service content did not decode | [API.md](API.md#report) |
 | `GooseStream.Issues`, `SVStream.Lost`, `SVStream.Repeated` | sequencing anomalies of the publishers | [API.md](API.md#goosestream) |
 
-Every counter is cumulative over one `Analyze` call; nothing is kept between calls. Counter keys and status values are fixed strings, so they are safe as metric labels.
+Every counter is cumulative over one `Analyze` call; nothing is kept between calls. Counter keys and status values are fixed strings, so they are safe as metric labels. The error `Analyze` returns says how the read ended: `ErrCorrupt` (damage, with its cause in the chain), `ErrLimit` (the input goes on past `Options.MaxBytes` or `Options.MaxSections`), or nil ([ERRORS.md](ERRORS.md)).
 
 What the pipeline tracks internally but does not report (TCP retransmissions and overlaps, IP fragments dropped by the reassembly budget, pcapng option errors and unknown blocks) is listed in [LIMITATIONS.md](LIMITATIONS.md#capture-files).
 

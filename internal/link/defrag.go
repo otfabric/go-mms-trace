@@ -23,6 +23,7 @@ type part struct {
 type datagram struct {
 	parts []part // sorted by offset
 	total int    // -1 until the last fragment is seen
+	end   int    // highest end of the parts held
 	size  int    // bytes charged: data plus overheads
 	gen   uint64
 }
@@ -41,7 +42,9 @@ type orderKey struct {
 
 // Defrag reassembles IPv4 and IPv6 fragments within a total byte budget.
 // When the budget is exceeded the oldest incomplete datagram is dropped and
-// counted. Overlapping fragments: the bytes of the lower offset win.
+// counted. Overlapping fragments: the bytes of the lower offset win. The
+// last fragment gives a datagram its length: every fragment of it lies
+// within that length, whatever the order they arrive in.
 type Defrag struct {
 	max   int
 	used  int
@@ -58,7 +61,13 @@ type Defrag struct {
 func NewDefrag(budget int) *Defrag { return &Defrag{max: budget, m: map[FragKey]*datagram{}} }
 
 // Add stores one fragment and returns the reassembled transport payload
-// with OK once every byte is there; FragmentHeld while incomplete.
+// with OK once every byte is there; FragmentHeld while incomplete. A
+// fragment that cannot belong to a valid datagram is FragmentBad: an empty
+// one, one that ends past 65535 or past the end of its datagram, a
+// fragment before the last whose length is not a multiple of 8, and a
+// second last fragment with another end. A last fragment that ends before
+// bytes already held is FragmentBad as well, and its datagram is given up:
+// the bytes held cannot belong to a datagram of that length.
 func (f *Defrag) Add(k FragKey, off int, more bool, data []byte) ([]byte, Reason) {
 	end := off + len(data)
 	if len(data) == 0 || end > 65535 || (more && len(data)%8 != 0) || len(data) > f.max {
@@ -76,6 +85,9 @@ func (f *Defrag) Add(k FragKey, off int, more bool, data []byte) ([]byte, Reason
 	switch {
 	case !more && d.total >= 0 && d.total != end:
 		return nil, FragmentBad // two different last fragments
+	case !more && d.end > end:
+		f.drop(k) // parts held from before end past the datagram's length
+		return nil, FragmentBad
 	case !more:
 		d.total = end
 	}
@@ -87,6 +99,7 @@ func (f *Defrag) Add(k FragKey, off int, more bool, data []byte) ([]byte, Reason
 	d.parts = append(d.parts, part{})
 	copy(d.parts[i+1:], d.parts[i:])
 	d.parts[i] = part{off, append([]byte(nil), data...)}
+	d.end = max(d.end, end)
 	d.size += len(data) + fragOverhead
 	f.used += len(data) + fragOverhead
 	for f.used > f.max && len(f.order) > 0 {
@@ -110,12 +123,17 @@ func (f *Defrag) Add(k FragKey, off int, more bool, data []byte) ([]byte, Reason
 	if have < d.total {
 		return nil, FragmentHeld
 	}
+	// Every part lies within d.total (checked above), and the walk above
+	// found no hole, so have never passes a part's offset or the length.
 	out := make([]byte, d.total)
 	have = 0
 	for _, p := range d.parts {
+		if have >= d.total {
+			break
+		}
 		if e := p.off + len(p.data); e > have {
 			copy(out[have:], p.data[have-p.off:])
-			have = e
+			have = min(e, d.total)
 		}
 	}
 	f.drop(k)

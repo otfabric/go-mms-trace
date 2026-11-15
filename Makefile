@@ -41,7 +41,7 @@ COVER_PKG_MIN := 85
 # Fuzz targets and the time each gets in `make fuzz`.
 FUZZ_TIME ?= 30s
 FUZZ_TARGETS = ./internal/pcapio:FuzzPcapReader ./internal/pcapio:FuzzPcapngReader ./internal/link:FuzzLinkIPTCP \
-	./trace:FuzzAnalyze
+	./internal/link:FuzzDefragSequence ./internal/flow:FuzzSegments ./trace:FuzzFramer ./trace:FuzzAnalyze
 
 # docsync release of docs-check.
 DOCSYNC_VERSION := v0.3.1

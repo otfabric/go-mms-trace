@@ -1,5 +1,44 @@
 # go-mms-trace Releases
 
+## v0.4.0
+
+**Date:** 2026-11-14
+**Previous release:** v0.3.7
+
+The analysis takes what a capture lost into account when it frames and pairs, bounds the input as a whole, and keeps the cause of a read error in the error it returns. The exported API grows: `Options.MaxBytes`, `Options.MaxInterfaces`, `Options.MaxSections` and `Options.MaxAssembly` with their `Default…` constants, `ErrLimit`, `StatusUncertain`, `File.UncompressedBytes` and `File.BadTimestamps`. Nothing exported is removed or changed.
+
+### Breaking
+
+No exported identifier breaks. The behaviour below changes; each entry says how to keep the previous behaviour where that is possible.
+
+- **A response paired across a capture loss has the status `uncertain`.** A response is paired with the held request of its invoke ID as `ok`, `error` or `reject` only when the capture holds everything the two sides sent between the two. It is `uncertain` (`StatusUncertain`) when bytes or PDUs of the requesting direction were lost in between, or the responder had acknowledged bytes of the requester that the capture does not hold, or bytes of the responding direction were lost that the requester had not acknowledged when it sent the request: the response may then answer a later request with the same invoke ID that was not captured (API.md, ARCHITECTURE.md section 5). `Request`, `Response`, the times and the frames are set as before. Code that switches on `Transaction.Status` sees a seventh value. To classify as before: map `uncertain` by `Response.Kind` (`confirmed-response` to `ok`, `confirmed-error` to `error`, `reject` to `reject`). None of the committed captures has such a pair.
+- **The capture read is bounded: 16 GiB, counted after decompression** (`Options.MaxBytes`, `DefaultMaxBytes`). A capture that goes on past it ends the analysis with the result so far and an error wrapping the new `ErrLimit`, which is not `ErrCorrupt`. To read without a bound: `Options{MaxBytes: math.MaxInt64}`.
+- **A pcapng input is bounded to 65,536 interfaces and 65,536 sections** (`Options.MaxInterfaces`, `Options.MaxSections`). A further interface is skipped with the packets captured on it (`File.SkippedBlocks`); a further section ends the analysis with `ErrLimit`. To read without these bounds: set both to `math.MaxInt`. The reader also keeps at most 16 MiB of interface and section option text, which the `Result` never held.
+- **Incomplete TPKT frames and TSDUs are bounded to 64 MiB over all connections** (`Options.MaxAssembly`). Beyond it the direction that has waited longest gives up what it holds: its TSDU counts in `TSDUErrors`, the bytes of its frame in `TPKTResync`. To hold without this bound: `Options{MaxAssembly: math.MaxInt}`. A TSDU that passes `MaxTSDU` is let go when it passes the limit and counted when it ends, as before.
+- **TPKT framing where a direction is not synchronised** (after a gap, after bytes that are no TPKT header, at the start of a stream captured from its middle): a TPKT header is accepted when the COTP TPDU behind it decodes, and otherwise costs one byte, so that a frame inside the bytes it claims is found. On such captures PDUs are found that were passed over, `Counters.TPKTResync` is higher and `Counters.COTPErrors` lower: `COTPErrors` now counts frames of a synchronised direction only. Of the committed captures, 16 public ones (the ITI "MMS specific commands") change in these two counters only (for example `cotp_errors` 2 to 0, `tpkt_resync` 17 to 36); no association, transaction or report of any committed capture changes. There is no option for the previous framing.
+- **GOOSE state numbers at the top of their range**: retransmissions of the state with stNum 4294967295 are no state change, and the step from 4294967295 to 1 is one (`Changes`), not `stNum decreased`. Streams that do not reach that number are reported as before.
+- **A pcapng time that does not fit in 64 bits of nanoseconds** (after 2262-04-11 or before 1677-09-21, with the interface's resolution and offset) leaves its packet without a time, counted in `File.BadTimestamps`; its transactions and reports have time 0.
+- **IP fragments**: every fragment of a datagram lies within the length its last fragment gives. A last fragment that ends before fragments already held is counted as `fragment_bad`, and its datagram is given up.
+
+### Added
+
+- `Options.MaxBytes`, `Options.MaxInterfaces`, `Options.MaxSections`, `Options.MaxAssembly`; `DefaultMaxBytes`, `DefaultMaxInterfaces`, `DefaultMaxSections`, `DefaultMaxAssembly`; `ErrLimit`; `StatusUncertain`; `File.UncompressedBytes` (the size of the capture as read, after decompression) and `File.BadTimestamps`.
+- A limits table with the reason for each default, the bytes the pipeline holds when every limit is reached, and the work a packet costs (ARCHITECTURE.md section 2); the memory a result takes for each byte of capture, measured (SECURITY.md).
+- Fuzz targets for the stages that keep state between packets, fed with sequences: `FuzzDefragSequence` (IP fragments, checked against the reassembly rule), `FuzzSegments` (TCP segments), `FuzzFramer` (the ISO framing with pieces, holes and other bytes). `FuzzAnalyze` and the reader targets check what they return.
+- A test for every limit that measures allocation, live heap or counted steps against a budget, boundary tables for the numeric fields, the contract test matrix, and benchmarks of `Analyze`, the reader and the TCP stage (TESTING.md sections 5 to 7).
+- A nightly workflow: every fuzz target for 5 minutes, the tests of both modules on linux/386, `TestOnePacketLoss` over every packet of the committed captures, the benchmarks once.
+
+### Changed
+
+- go-mms v1.11.0 (was v1.10.0) and go-iec61850 v1.23.0 (was v1.22.0). The decoding of captures is unchanged: the new releases change servers, clients and the ISO transport, which this module does not use, and every committed capture gives the same result.
+- The error of `Analyze` keeps its cause: an error wrapping `ErrCorrupt` also wraps what the reader reported (the error of the caller's `io.Reader`, `gzip.ErrChecksum`), and a read error before the format is known wraps `ErrFormat` and that error. More `errors.Is` matches; none is removed. ERRORS.md says when an error is worth another read.
+- `Options.MaxPacket` above the 32 bits a record length has bounds nothing (the reader takes it as the largest length).
+- The caller owns the `Result` and everything reachable from it (API.md): `Association.CallingTSAP` and `CalledTSAP` are copies.
+- Memory and work: a record or block is read in steps, so a length the input does not hold is not allocated; a held TCP segment is let go when it is delivered; the scratch of a GOOSE stream (every pair of numbers seen, a count per second) is let go before `Analyze` returns; the connection that gives up a hole at the total out-of-order budget is chosen in a number of steps that does not depend on the connections tracked; TCP sequence distances are compared as 32-bit numbers on every platform.
+- AGENTS.md names the otfabric-policy version CI runs (v1.6.1).
+
+---
+
 ## v0.3.7
 
 **Date:** 2026-11-14

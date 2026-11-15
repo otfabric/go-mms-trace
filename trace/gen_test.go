@@ -28,7 +28,7 @@ type unit struct {
 
 // recordAssociation runs a real go-mms client against a go-mms server
 // over TCP and records every unit the client sent and received.
-func recordAssociation(t *testing.T, work func(context.Context, *mms.Client)) []unit {
+func recordAssociation(t testing.TB, work func(context.Context, *mms.Client)) []unit {
 	t.Helper()
 	srv := mms.NewServer(mms.ServerOptions{})
 	srv.HandleIdentify(func(context.Context, mms.IdentifyRequest) (*mms.ServerIdentity, error) {
@@ -74,12 +74,13 @@ func recordAssociation(t *testing.T, work func(context.Context, *mms.Client)) []
 
 // capture builds a pcap file.
 type capture struct {
-	t    *testing.T
+	t    testing.TB
 	buf  bytes.Buffer
 	w    *pcapio.PcapWriter
 	ns   int64
 	seq  [2]uint32 // client, server
 	port uint16
+	n    uint64 // packets written: the frame number of the last one
 }
 
 var (
@@ -89,7 +90,7 @@ var (
 	serverIP  = []byte{10, 0, 0, 2}
 )
 
-func newCapture(t *testing.T) *capture {
+func newCapture(t testing.TB) *capture {
 	t.Helper()
 	c := &capture{t: t, ns: time.Date(2026, 11, 9, 12, 0, 0, 0, time.UTC).UnixNano(), seq: [2]uint32{1000, 5000}, port: 40000}
 	w, err := pcapio.NewPcapWriter(&c.buf, pcapio.PcapOptions{LinkType: 1, Nanos: true})
@@ -106,6 +107,7 @@ func (c *capture) packet(data []byte) {
 	if err := c.w.WritePacket(c.ns, 0, data); err != nil {
 		c.t.Fatal(err)
 	}
+	c.n++
 }
 
 // tcp writes a TCP segment from the client (from=0) or the server.
@@ -168,7 +170,7 @@ func tpkt(tpdu []byte) []byte {
 	return append(b, tpdu...)
 }
 
-func marshal(t *testing.T, m interface{ MarshalBinary() ([]byte, error) }) []byte {
+func marshal(t testing.TB, m interface{ MarshalBinary() ([]byte, error) }) []byte {
 	t.Helper()
 	b, err := m.MarshalBinary()
 	if err != nil {
@@ -209,7 +211,7 @@ func (c *capture) close() {
 	c.tcp(1, 0x11, nil)
 }
 
-func (c *capture) goose(t *testing.T, stNum, sqNum uint32) {
+func (c *capture) goose(t testing.TB, stNum, sqNum uint32) {
 	t.Helper()
 	b, err := goose.Encode(&goose.Frame{Dst: goose.MAC{0x01, 0x0c, 0xcd, 0x01, 0, 1}, Src: goose.MAC{0x02, 0, 0, 0, 0, 9}, AppID: 1,
 		PDU: goose.PDU{GocbRef: "IED1LD0/LLN0$GO$gcb1", TimeAllowedToLive: 2000, DatSet: "IED1LD0/LLN0$ds1", GoID: "gcb1",
@@ -221,7 +223,7 @@ func (c *capture) goose(t *testing.T, stNum, sqNum uint32) {
 }
 
 // gooseFrame writes a GOOSE frame built from f's defaults with changes.
-func (c *capture) gooseFrame(t *testing.T, change func(*goose.Frame)) {
+func (c *capture) gooseFrame(t testing.TB, change func(*goose.Frame)) {
 	t.Helper()
 	f := &goose.Frame{Dst: goose.MAC{0x01, 0x0c, 0xcd, 0x01, 0, 2}, Src: goose.MAC{0x02, 0, 0, 0, 0, 7}, AppID: 2,
 		PDU: goose.PDU{GocbRef: "IED2LD0/LLN0$GO$gcb2", TimeAllowedToLive: 2000, DatSet: "IED2LD0/LLN0$ds", StNum: 1, ConfRev: 1,
@@ -234,7 +236,7 @@ func (c *capture) gooseFrame(t *testing.T, change func(*goose.Frame)) {
 	c.packet(b)
 }
 
-func (c *capture) sv(t *testing.T, smpCnt uint16) {
+func (c *capture) sv(t testing.TB, smpCnt uint16) {
 	t.Helper()
 	b, err := sv.Encode(&sv.Frame{Dst: sv.MAC{0x01, 0x0c, 0xcd, 0x04, 0, 1}, Src: sv.MAC{0x02, 0, 0, 0, 0, 8}, AppID: 0x4000,
 		PDU: sv.PDU{ASDUs: []sv.ASDU{{SvID: "MU01", SmpCnt: smpCnt, ConfRev: 1, Sample: make([]byte, 64)}}}})
@@ -244,7 +246,7 @@ func (c *capture) sv(t *testing.T, smpCnt uint16) {
 	c.packet(b)
 }
 
-func (c *capture) bytes(t *testing.T) []byte {
+func (c *capture) bytes(t testing.TB) []byte {
 	t.Helper()
 	if err := c.w.Flush(); err != nil {
 		t.Fatal(err)
@@ -253,7 +255,7 @@ func (c *capture) bytes(t *testing.T) []byte {
 }
 
 // recordReport records a client receiving one InformationReport.
-func recordReport(t *testing.T) []unit {
+func recordReport(t testing.TB) []unit {
 	t.Helper()
 	srv := mms.NewServer(mms.ServerOptions{})
 	if err := srv.RegisterDomain("LD0"); err != nil {

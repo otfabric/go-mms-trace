@@ -9,6 +9,7 @@
 package trace
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
 	"encoding/hex"
@@ -36,35 +37,100 @@ const MaxTSDU = 16 << 20
 // maxTSDU is MaxTSDU; tests lower it.
 var maxTSDU = MaxTSDU
 
-// Options configure an analysis.
+// The defaults of the limits in Options.
+const (
+	// DefaultMaxBytes is the default of Options.MaxBytes: 16 GiB of
+	// capture, counted after decompression. An hour of one Sampled Values
+	// stream at 4800 frames a second is about 2.5 GiB, and capture tools
+	// rotate their files well below this size.
+	DefaultMaxBytes int64 = pcapio.DefaultMaxBytes
+	// DefaultMaxInterfaces is the default of Options.MaxInterfaces: 65,536
+	// capture interfaces over all pcapng sections of one input. A capture
+	// has a handful per section.
+	DefaultMaxInterfaces = pcapio.DefaultMaxInterfaces
+	// DefaultMaxSections is the default of Options.MaxSections: 65,536
+	// pcapng sections in one input. A capture has one; captures joined end
+	// to end have one each.
+	DefaultMaxSections = pcapio.DefaultMaxSections
+	// DefaultMaxAssembly is the default of Options.MaxAssembly: 64 MiB of
+	// incomplete TPKT frames and TSDUs over all connections, the size of
+	// the total buffer for out-of-order TCP segments. An MMS PDU is in
+	// assembly only between its first and its last TCP segment.
+	DefaultMaxAssembly = 64 << 20
+)
+
+// Options configure an analysis. The zero value takes every default.
 type Options struct {
 	// Ports are the server TCP ports of MMS; nil is DefaultPorts.
 	Ports []uint16
-	// MaxPacket bounds a packet record; zero or negative is 256 KiB.
+	// MaxPacket bounds a packet record; zero or negative is 256 KiB. A
+	// value above what a record can declare (4 GiB) bounds nothing.
 	MaxPacket int
+	// MaxBytes bounds the capture that is read, in bytes after
+	// decompression; zero or negative is DefaultMaxBytes. An input that
+	// goes on past it ends the analysis with the results so far and an
+	// error wrapping ErrLimit. The memory an analysis needs grows with the
+	// capture, so an application that reads captures it does not trust
+	// sets this to what it can afford (SECURITY.md). math.MaxInt64 bounds
+	// nothing.
+	MaxBytes int64
+	// MaxInterfaces bounds the capture interfaces of a pcapng input, over
+	// all its sections; zero or negative is DefaultMaxInterfaces. A further
+	// interface is skipped with the packets captured on it
+	// (File.SkippedBlocks).
+	MaxInterfaces int
+	// MaxSections bounds the sections of a pcapng input; zero or negative
+	// is DefaultMaxSections. A further section ends the analysis with the
+	// results so far and an error wrapping ErrLimit.
+	MaxSections int
+	// MaxAssembly bounds the bytes of incomplete TPKT frames and TSDUs
+	// held over all connections; zero or negative is DefaultMaxAssembly.
+	// Beyond it the direction that has waited longest for the rest of its
+	// data gives up what it holds: its TSDU counts in
+	// Counters.TSDUErrors, and its framing starts again
+	// (Counters.TPKTResync).
+	MaxAssembly int
 }
 
 // ErrCorrupt wraps an error that ended reading a damaged file; the result
-// holds what was read before it.
+// holds what was read before it. The error also wraps what the reader
+// reported, down to the error of the caller's io.Reader or of the gzip
+// stream.
 var ErrCorrupt = errors.New("trace: damaged capture")
 
 // ErrFormat wraps the error of an input that is not a pcap or pcapng file
-// (plain or gzip); Analyze then returns no result.
+// (plain or gzip); Analyze then returns no result. When the input could not
+// be read far enough to tell, the error also wraps the error of the
+// caller's io.Reader.
 var ErrFormat = pcapio.ErrFormat
+
+// ErrLimit wraps the error of an input that goes on past Options.MaxBytes
+// or has more pcapng sections than Options.MaxSections; the result holds
+// what was read before it.
+var ErrLimit = pcapio.ErrLimit
 
 // Analyze reads a whole capture and returns what it holds. A damaged file
 // ends the analysis with the results so far and an error wrapping
-// ErrCorrupt. Cancelling ctx stops it between packets.
+// ErrCorrupt, an input beyond Options.MaxBytes or Options.MaxSections with
+// the results so far and an error wrapping ErrLimit. Cancelling ctx stops
+// it between packets.
+//
+// The caller owns the Result and everything reachable from it: Analyze
+// keeps no reference to it, to r or to anything read from r, and no state
+// between calls.
 func Analyze(ctx context.Context, r io.Reader, o Options) (*Result, error) {
 	if o.Ports == nil {
 		o.Ports = DefaultPorts
 	}
-	rd, err := pcapio.NewReader(r, pcapio.Options{MaxPacket: o.MaxPacket})
+	if o.MaxAssembly <= 0 {
+		o.MaxAssembly = DefaultMaxAssembly
+	}
+	rd, err := pcapio.NewReader(r, pcapio.Options{MaxPacket: o.MaxPacket, MaxBytes: o.MaxBytes,
+		MaxInterfaces: o.MaxInterfaces, MaxSections: o.MaxSections})
 	if err != nil {
 		return nil, err
 	}
-	a := &analyzer{o: o, res: &Result{Counters: Counters{Unsupported: map[string]uint64{}}},
-		gooseByKey: map[string]*GooseStream{}, svByKey: map[string]*SVStream{}}
+	a := newAnalyzer(o)
 	dec := link.NewDecoder(1 << 20)
 	tr := flow.NewTracker(flow.DefaultLimits, a)
 	var p pcapio.Packet
@@ -75,8 +141,10 @@ func Analyze(ctx context.Context, r io.Reader, o Options) (*Result, error) {
 			return nil, err
 		}
 		if err := rd.Next(&p); err != nil {
-			if !errors.Is(err, io.EOF) {
-				readErr = fmt.Errorf("%w: %v", ErrCorrupt, err)
+			if errors.Is(err, ErrLimit) {
+				readErr = err
+			} else if !errors.Is(err, io.EOF) {
+				readErr = fmt.Errorf("%w: %w", ErrCorrupt, err)
 			}
 			break
 		}
@@ -121,9 +189,15 @@ func Analyze(ctx context.Context, r io.Reader, o Options) (*Result, error) {
 		f.Links = append(f.Links, link.LinkName(i.LinkType))
 	}
 	rc := rd.Counters()
-	f.InputBytes, f.TruncatedTail, f.SkippedBlocks = rd.InputBytes(), rc.TruncatedTail, rc.SkippedBlocks
+	f.InputBytes, f.UncompressedBytes = rd.InputBytes(), rd.Offset()
+	f.TruncatedTail, f.SkippedBlocks, f.BadTimestamps = rc.TruncatedTail, rc.SkippedBlocks, rc.BadTimestamps
 	if len(a.res.Counters.Unsupported) == 0 {
 		a.res.Counters.Unsupported = map[string]uint64{}
+	}
+	// What a stream needed only to compare its messages is not part of the
+	// result.
+	for _, s := range a.res.GOOSE {
+		s.last, s.seen, s.perSecond = nil, nil, nil
 	}
 	return a.res, readErr
 }
@@ -151,6 +225,19 @@ type analyzer struct {
 	ns         int64
 	gooseByKey map[string]*GooseStream
 	svByKey    map[string]*SVStream
+	// held is the list of the directions that hold bytes of an incomplete
+	// TPKT or TSDU, the one fed longest ago first (held.next), and heldLen
+	// what they hold in all: at most Options.MaxAssembly.
+	held    isoDir
+	heldLen int
+}
+
+// newAnalyzer returns the handler of one analysis. o has its defaults.
+func newAnalyzer(o Options) *analyzer {
+	a := &analyzer{o: o, res: &Result{Counters: Counters{Unsupported: map[string]uint64{}}},
+		gooseByKey: map[string]*GooseStream{}, svByKey: map[string]*SVStream{}}
+	a.held.prev, a.held.next = &a.held, &a.held
+	return a
 }
 
 // conn is the ISO stack state of one TCP connection.
@@ -158,7 +245,7 @@ type conn struct {
 	assoc   *Association
 	server  int // direction index of the server: the end on an MMS port
 	dirs    [2]isoDir
-	pending map[pendingKey]*Transaction
+	pending map[pendingKey]request
 }
 
 // pendingKey is a request waiting for its answer: the direction that sent
@@ -168,21 +255,49 @@ type pendingKey struct {
 	id  uint32
 }
 
+// request is a confirmed request waiting for its answer, with what decides
+// later whether the capture holds everything the two sides sent between
+// the request and its answer: the holes of its own direction (sent) and of
+// the direction its answer comes in (back) when it was captured, and the
+// position of that direction its sender had acknowledged then (acked, when
+// hasAcked).
+type request struct {
+	t          *Transaction
+	sent, back uint64
+	acked      uint64
+	hasAcked   bool
+}
+
 // isoDir reassembles one direction: TPKT frames from the byte stream, the
 // user data of COTP DT TPDUs into TSDUs.
 type isoDir struct {
 	buf      []byte
 	tsdu     []byte
 	tsduOver bool
+	// started says the direction delivered bytes or skipped some. lost
+	// says its TPKT framing is not synchronised: bytes were skipped, or
+	// the capture did not hold the start of the stream. Until a TPDU
+	// decodes again, a TPKT header is a candidate that may be data.
+	started, lost bool
+	// end is the stream position the direction has reached: delivered or
+	// skipped. holes counts the times bytes or PDUs of this direction were
+	// lost to the analysis: a gap of the TCP stream, bytes skipped to find
+	// a TPKT header, a TPDU or TSDU that did not decode or was given up.
+	// holeEnd is the position the direction had reached at the last one.
+	end, holes, holeEnd uint64
 	// first frame and time of the TSDU being assembled
 	frame uint64
 	ns    int64
+	// charged is what the direction holds of Options.MaxAssembly; prev and
+	// next link it into the analyzer's list while it holds something.
+	charged    int
+	prev, next *isoDir
 }
 
 // Open implements flow.Handler.
 func (a *analyzer) Open(c *flow.Conn) {
 	// Only segments to or from an MMS port reach the tracker.
-	cs := &conn{pending: map[pendingKey]*Transaction{}}
+	cs := &conn{pending: map[pendingKey]request{}}
 	if !slices.Contains(a.o.Ports, c.Endpoints[0].Port()) {
 		cs.server = 1
 	}
@@ -194,17 +309,74 @@ func (a *analyzer) Repeat(*flow.Conn, int, uint64, uint64) {}
 
 // Gap implements flow.Handler: bytes are missing, so the TPKT framing and
 // the TSDU being assembled in that direction start again.
-func (a *analyzer) Gap(c *flow.Conn, dir int, _ uint64, _ int64, _ flow.GapKind) {
+func (a *analyzer) Gap(c *flow.Conn, dir int, pos uint64, n int64, _ flow.GapKind) {
 	cs := c.User.(*conn)
 	if cs.assoc != nil {
 		cs.assoc.Gaps++
 	}
-	cs.dirs[dir] = isoDir{}
+	d := &cs.dirs[dir]
+	d.end = pos + uint64(n)
+	a.reset(d)
+}
+
+// hole records that bytes or PDUs of the direction were lost to the
+// analysis, up to the position it has reached.
+func (d *isoDir) hole() {
+	d.holes++
+	d.holeEnd = d.end
+}
+
+// reset starts the direction again after bytes of it were lost: what it
+// held is let go, its framing is not synchronised, and it has one more
+// hole.
+func (a *analyzer) reset(d *isoDir) {
+	a.unhold(d)
+	*d = isoDir{started: true, lost: true, end: d.end, holes: d.holes, holeEnd: d.holeEnd}
+	d.hole()
+}
+
+// unhold takes the direction out of the list of holders.
+func (a *analyzer) unhold(d *isoDir) {
+	a.heldLen -= d.charged
+	d.charged = 0
+	if d.next != nil {
+		d.prev.next, d.next.prev = d.next, d.prev
+		d.prev, d.next = nil, nil
+	}
+}
+
+// account charges what the direction holds now, after it was fed, and
+// keeps the total within Options.MaxAssembly: beyond it, the direction fed
+// longest ago gives up what it holds, until the total fits. Each step is a
+// constant amount of work, whatever the number of connections.
+func (a *analyzer) account(d *isoDir) {
+	n := cap(d.buf) + cap(d.tsdu)
+	a.unhold(d)
+	if n == 0 {
+		return
+	}
+	d.charged = n
+	a.heldLen += n
+	d.prev, d.next = a.held.prev, &a.held
+	a.held.prev.next = d
+	a.held.prev = d
+	for a.heldLen > a.o.MaxAssembly {
+		v := a.held.next
+		a.res.Counters.TPKTResync += uint64(len(v.buf))
+		over := v.tsduOver || len(v.tsdu) > 0
+		a.reset(v)
+		v.tsduOver = over // the rest of its TSDU is not assembled; its end counts it
+	}
 }
 
 // Close implements flow.Handler.
 func (a *analyzer) Close(c *flow.Conn) {
 	cs := c.User.(*conn)
+	for d := range cs.dirs {
+		// The connection delivers nothing more: its buffers are let go.
+		a.unhold(&cs.dirs[d])
+		cs.dirs[d] = isoDir{}
+	}
 	if cs.assoc == nil {
 		return
 	}
@@ -229,8 +401,8 @@ func (a *analyzer) finish(cs *conn) {
 	if cs.assoc.Close == "" {
 		status = StatusPending
 	}
-	for id, t := range cs.pending {
-		t.Status = status
+	for id, r := range cs.pending {
+		r.t.Status = status
 		if status == StatusUnanswered {
 			cs.assoc.Unanswered++
 		}
@@ -238,68 +410,145 @@ func (a *analyzer) finish(cs *conn) {
 	}
 }
 
-// Data implements flow.Handler.
-func (a *analyzer) Data(c *flow.Conn, dir int, _ uint64, b []byte, ch flow.Chunk) {
+// Data implements flow.Handler. b is the tracker's: what is kept of it is
+// copied.
+func (a *analyzer) Data(c *flow.Conn, dir int, pos uint64, b []byte, ch flow.Chunk) {
 	cs := c.User.(*conn)
 	d := &cs.dirs[dir]
-	d.buf = append(d.buf, b...)
-	for {
-		if len(d.buf) < 4 {
-			return
-		}
-		if d.buf[0] != 3 || d.buf[1] != 0 {
+	if !d.started {
+		// A direction whose SYN was captured starts at a TPKT header; any
+		// other may start inside a TPKT.
+		d.started, d.lost = true, c.SYNFrom != dir && c.SYNACKFrom != dir
+	}
+	d.end = pos + uint64(len(b))
+	buf := b
+	if len(d.buf) > 0 {
+		d.buf = append(d.buf, b...)
+		buf = d.buf
+	}
+	rest := a.frames(c, cs, dir, buf, ch)
+	switch {
+	case len(rest) == 0:
+		d.buf = nil
+	case len(d.buf) > 0 && len(rest) == len(buf):
+		// Nothing was taken from the direction's own buffer: it waits for
+		// the rest of its TPKT.
+	default:
+		// A copy of its own size: b is not ours to keep, and the bytes
+		// taken from the front of the buffer are let go.
+		d.buf = bytes.Clone(rest)
+	}
+	a.account(d)
+}
+
+// skip drops n bytes that are not part of a TPKT frame from buf: the
+// direction is not synchronised until a TPDU decodes again.
+func (a *analyzer) skip(d *isoDir, buf []byte, n int) []byte {
+	a.res.Counters.TPKTResync += uint64(n)
+	d.lost = true
+	d.hole()
+	return buf[n:]
+}
+
+// frames takes the complete TPKT frames out of buf, the bytes of one
+// direction from its last frame on, and returns what is left: the start of
+// a frame that is not complete yet.
+//
+// A TPKT header is 3, 0 and a length of at least 7. While the direction is
+// synchronised, the frame that follows a frame is taken at its length.
+// While it is not (after a gap of the stream, after bytes that were no
+// header, at the start of a stream captured midstream), those four bytes
+// may be data, so a header is only a candidate: it is accepted when its
+// COTP TPDU decodes, and otherwise costs one byte, so that a frame that
+// starts inside the bytes it claims is still found.
+func (a *analyzer) frames(c *flow.Conn, cs *conn, dir int, buf []byte, ch flow.Chunk) []byte {
+	d := &cs.dirs[dir]
+	for len(buf) >= 4 {
+		if buf[0] != 3 || buf[1] != 0 {
 			// Not a TPKT header: find the next one.
 			i := 1
-			for i < len(d.buf)-1 && (d.buf[i] != 3 || d.buf[i+1] != 0) {
+			for i < len(buf)-1 && (buf[i] != 3 || buf[i+1] != 0) {
 				i++
 			}
-			a.res.Counters.TPKTResync += uint64(i)
-			d.buf = d.buf[i:]
+			buf = a.skip(d, buf, i)
 			continue
 		}
-		n := int(binary.BigEndian.Uint16(d.buf[2:4]))
+		n := int(binary.BigEndian.Uint16(buf[2:4]))
 		if n < 7 {
-			a.res.Counters.TPKTResync++
-			d.buf = d.buf[1:]
+			buf = a.skip(d, buf, 1)
 			continue
 		}
-		if len(d.buf) < n {
-			return
+		if d.lost {
+			// Before waiting for the bytes a candidate claims: the TPDU
+			// header it would start with has to be one, and to fit.
+			if len(buf) < 6 {
+				break
+			}
+			h := 5 + int(buf[4]) // the end of the TPDU header its length indicator gives
+			typ, err := cotp.PeekType(buf[4:6])
+			if err != nil || h > n {
+				buf = a.skip(d, buf, 1)
+				continue
+			}
+			if len(buf) < h {
+				break
+			}
+			// The header alone decodes when it is one, except for
+			// expedited data, which cannot be empty.
+			if typ != cotp.TypeED {
+				if _, err := cotp.Decode(buf[4:h]); err != nil {
+					buf = a.skip(d, buf, 1)
+					continue
+				}
+			}
 		}
-		a.tpdu(c, cs, dir, d.buf[4:n], ch)
-		d.buf = d.buf[n:]
+		if len(buf) < n {
+			break
+		}
+		t, err := cotp.Decode(buf[4:n])
+		switch {
+		case err == nil:
+			d.lost = false
+			a.tpdu(c, cs, dir, &t, ch)
+		case d.lost:
+			buf = a.skip(d, buf, 1)
+			continue
+		default:
+			a.res.Counters.COTPErrors++
+			d.hole()
+		}
+		buf = buf[n:]
 	}
+	return buf
 }
 
 // tpdu handles one COTP TPDU.
-func (a *analyzer) tpdu(c *flow.Conn, cs *conn, dir int, b []byte, ch flow.Chunk) {
-	t, err := cotp.Decode(b)
-	if err != nil {
-		a.res.Counters.COTPErrors++
-		return
-	}
+func (a *analyzer) tpdu(c *flow.Conn, cs *conn, dir int, t *cotp.Decoded, ch flow.Chunk) {
 	as := a.association(c, cs, ch)
 	switch {
 	case t.CR != nil:
 		if as.Open == "midstream" {
 			as.Open = "connect"
 		}
-		as.CallingTSAP, as.CalledTSAP = t.CR.CallingSelector, t.CR.CalledSelector
+		// Copies: the decoded selectors point into the bytes they were
+		// decoded from, which are not kept.
+		as.CallingTSAP, as.CalledTSAP = bytes.Clone(t.CR.CallingSelector), bytes.Clone(t.CR.CalledSelector)
 	case t.DT != nil:
 		d := &cs.dirs[dir]
 		if len(d.tsdu) == 0 {
 			d.frame, d.ns = ch.Frame, ch.TimeNS
 		}
-		if len(d.tsdu)+len(t.DT.UserData) > maxTSDU {
-			d.tsduOver = true
+		if d.tsduOver || len(d.tsdu)+len(t.DT.UserData) > maxTSDU {
+			d.tsduOver, d.tsdu = true, nil
 		} else {
 			d.tsdu = append(d.tsdu, t.DT.UserData...)
 		}
 		if t.DT.EOT {
 			if d.tsduOver {
 				a.res.Counters.TSDUErrors++
+				d.hole()
 			} else {
-				a.tsdu(c, cs, dir, d.tsdu, d.frame, d.ns)
+				a.tsdu(c, cs, dir, d.tsdu, d.frame, d.ns, ch)
 			}
 			d.tsdu, d.tsduOver = nil, false
 		}
@@ -320,8 +569,31 @@ func (a *analyzer) association(c *flow.Conn, cs *conn, ch flow.Chunk) *Associati
 	return cs.assoc
 }
 
-// tsdu handles one reassembled TSDU.
-func (a *analyzer) tsdu(c *flow.Conn, cs *conn, dir int, b []byte, frame uint64, ns int64) {
+// uncertain reports whether an answer in direction dir, with the invoke ID
+// of the waiting request r, may answer another request. The answer belongs
+// to r for certain only when the capture holds everything the two sides
+// sent in between:
+//
+//   - A hole in the requesting direction since r was captured may have held
+//     a later request with the same invoke ID, the one this answers. Such a
+//     hole shows before a gap can be declared for it: the answering side
+//     has acknowledged bytes of the requesting side that the capture has
+//     not delivered.
+//   - A hole in the answering direction since r was captured may have held
+//     r's own answer, so that this one answers a later request. That cannot
+//     be when the hole ends before the position the requester had
+//     acknowledged when it sent r: those bytes were sent before r arrived.
+func (a *analyzer) uncertain(c *flow.Conn, cs *conn, dir int, r request) bool {
+	req, ans := &cs.dirs[1-dir], &cs.dirs[dir]
+	if req.holes != r.sent || c.AckedAhead(1-dir) {
+		return true
+	}
+	return ans.holes != r.back && (!r.hasAcked || ans.holeEnd > r.acked)
+}
+
+// tsdu handles one reassembled TSDU: its first frame and time, and the
+// chunk that completed it.
+func (a *analyzer) tsdu(c *flow.Conn, cs *conn, dir int, b []byte, frame uint64, ns int64, ch flow.Chunk) {
 	as := cs.assoc
 	u, err := mms.DecodeTSDU(b)
 	if errors.Is(err, mms.ErrNotMMS) {
@@ -335,6 +607,7 @@ func (a *analyzer) tsdu(c *flow.Conn, cs *conn, dir int, b []byte, frame uint64,
 	}
 	if err != nil {
 		a.res.Counters.TSDUErrors++
+		cs.dirs[dir].hole()
 		if u == nil {
 			return
 		}
@@ -374,11 +647,11 @@ func (a *analyzer) tsdu(c *flow.Conn, cs *conn, dir int, b []byte, frame uint64,
 		t := &Transaction{Association: as.ID, InvokeID: p.InvokeID, Service: p.Service, Request: p, RequestNS: ns, RequestFrame: frame,
 			ServerRequest: dir == cs.server}
 		k := pendingKey{dir, p.InvokeID}
-		if old := cs.pending[k]; old != nil {
-			old.Status = StatusUnanswered // the invoke ID was used again before an answer
+		if old, ok := cs.pending[k]; ok {
+			old.t.Status = StatusUnanswered // the invoke ID was used again before an answer
 			as.Unanswered++
 		}
-		cs.pending[k] = t
+		cs.pending[k] = request{t: t, sent: cs.dirs[dir].holes, back: cs.dirs[1-dir].holes, acked: ch.Acked, hasAcked: ch.HasAcked}
 		as.Transactions++
 		a.res.Transactions = append(a.res.Transactions, t)
 	case "confirmed-response", "confirmed-error", "reject":
@@ -386,14 +659,18 @@ func (a *analyzer) tsdu(c *flow.Conn, cs *conn, dir int, b []byte, frame uint64,
 			return
 		}
 		k := pendingKey{1 - dir, p.InvokeID}
-		t := cs.pending[k]
-		if t == nil {
+		var t *Transaction
+		if r, ok := cs.pending[k]; ok {
+			delete(cs.pending, k)
+			t = r.t
+			t.Status = map[string]string{"confirmed-response": StatusOK, "confirmed-error": StatusError, "reject": StatusReject}[p.Kind]
+			if a.uncertain(c, cs, dir, r) {
+				t.Status = StatusUncertain
+			}
+		} else {
 			t = &Transaction{Association: as.ID, InvokeID: p.InvokeID, Service: p.Service, Status: StatusOrphan, ServerRequest: dir != cs.server}
 			as.Transactions++
 			a.res.Transactions = append(a.res.Transactions, t)
-		} else {
-			delete(cs.pending, k)
-			t.Status = map[string]string{"confirmed-response": StatusOK, "confirmed-error": StatusError, "reject": StatusReject}[p.Kind]
 		}
 		t.Response, t.ResponseNS, t.ResponseFrame = p, ns, frame
 	case "unconfirmed":

@@ -38,13 +38,23 @@ type File struct {
 	Links []string
 	// InputBytes is the size of the file as read (before decompression).
 	InputBytes int64
+	// UncompressedBytes is the size of the capture as read: the bytes
+	// after decompression of a gzip input, the bytes of a plain one. It is
+	// what Options.MaxBytes bounds.
+	UncompressedBytes int64
 	// TruncatedTail says the last record was cut short: the file ends in
 	// the middle of a packet, which is dropped without an error. A read
 	// error of the input is not truncation: it wraps ErrCorrupt.
 	TruncatedTail bool
-	// SkippedBlocks counts damaged pcapng blocks with a plausible length
-	// that were skipped.
+	// SkippedBlocks counts pcapng blocks that were skipped: damaged blocks
+	// with a plausible length, packets that name no interface, and the
+	// interfaces past Options.MaxInterfaces.
 	SkippedBlocks uint64
+	// BadTimestamps counts the packets of a pcapng file whose time does
+	// not fit in 64 bits of nanoseconds (it lies after the year 2262 or
+	// before 1678): they are used without a time, like a packet that has
+	// none.
+	BadTimestamps uint64
 	// FirstNS and LastNS are the times of the first and last packet,
 	// Unix nanoseconds.
 	FirstNS, LastNS int64
@@ -54,8 +64,9 @@ type File struct {
 type Counters struct {
 	// Packets by link-layer outcome: not IP, not TCP, short, ...
 	Unsupported map[string]uint64
-	// TPKTResync counts bytes skipped to find the next TPKT header after
-	// a gap or garbage.
+	// TPKTResync counts bytes skipped to find the next TPKT frame after a
+	// gap or garbage, and the bytes of an incomplete frame given up to
+	// Options.MaxAssembly.
 	TPKTResync uint64
 	// COTPErrors counts TPDUs that did not decode, TSDUErrors TSDUs that
 	// did not decode (session, presentation, ACSE or MMS) or exceeded
@@ -95,7 +106,8 @@ type Association struct {
 	Authentication string
 	// Initiate is the negotiated Initiate response, when captured.
 	Initiate *mms.CapturedInitiate
-	// TSAPs from the COTP connection request, when captured.
+	// TSAPs from the COTP connection request, when captured. They are
+	// copies: the caller owns them like the rest of the Result.
 	CallingTSAP, CalledTSAP []byte
 
 	FirstNS, LastNS int64
@@ -116,6 +128,14 @@ const (
 	StatusUnanswered = "unanswered" // no response before the association ended or the invoke ID was reused
 	StatusOrphan     = "orphan"     // a response whose request was not captured
 	StatusPending    = "pending"    // no response before the capture ended
+	// StatusUncertain is a response paired with a request while the
+	// capture does not hold everything the two sides sent in between:
+	// bytes of either direction were skipped or did not decode, or the
+	// responder had acknowledged bytes of the requester that the capture
+	// does not hold. The response may then answer a later request with
+	// the same invoke ID that was not captured. Response.Kind tells a
+	// confirmed response, a confirmed error and a reject apart.
+	StatusUncertain = "uncertain"
 )
 
 // Transaction is a confirmed service: the request and what answered it.

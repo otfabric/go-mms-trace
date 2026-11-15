@@ -1,0 +1,88 @@
+# Extended tier (otfabric/engineering standards/testing.md#ci-tiers): long
+# fuzzing, the tests on a 32-bit architecture, the one-packet-loss property
+# over every packet of the committed captures, and one iteration of every
+# benchmark. A fuzz failure leaves its input in the artifact: commit it with
+# the fix (TESTING.md).
+name: Nightly
+run-name: "Nightly on ${{ github.ref_name }}"
+
+on:
+  schedule:
+    - cron: "23 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GOWORK: "off"
+
+jobs:
+  fuzz:
+    name: Fuzz
+    runs-on: ubuntu-24.04
+    # 7 targets at 5 minutes each.
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      # The current stable Go, as the fuzz smoke of go-ci: Go 1.26 has a
+      # fuzz coordinator race at the end of -fuzztime (go.dev/issue/75804).
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+      - run: make fuzz FUZZ_TIME=5m
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: fuzz-corpus-nightly
+          path: "**/testdata/fuzz/"
+
+  # Platform width (otfabric/engineering standards/testing.md#platform-width):
+  # the readers, the link parser, the reassembly and the framing convert
+  # file and wire integers to int, so the tests also run where int has 32
+  # bits (linux/arm v7 is a release target that no runner executes). ubuntu
+  # runners execute 386 binaries; the race detector does not exist for 386.
+  test-386:
+    name: Tests on a 32-bit architecture
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          check-latest: true
+      - name: Library
+        run: GOARCH=386 go test -count=1 ./...
+      - name: mmstracectl
+        run: cd cmd/mmstracectl && GOARCH=386 go test -count=1 ./...
+
+  # TestOnePacketLoss leaves out a few packets of every committed capture
+  # in the pull request tier; here it leaves out every one.
+  packet-loss:
+    name: One-packet loss, every packet
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          check-latest: true
+      - env:
+          MMSTRACE_ALL_PACKETS: "1"
+        run: go test -count=1 -timeout 40m -run '^TestOnePacketLoss$' ./trace
+
+  # One iteration of every benchmark: a benchmark that fails is found here.
+  # No figure is compared or gated (standards/performance.md#gates).
+  bench:
+    name: Benchmarks (one iteration)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          check-latest: true
+      - run: go test -run '^$' -bench . -benchtime=1x ./...

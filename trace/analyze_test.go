@@ -17,7 +17,7 @@ func hz() mms.ObjectName {
 	return mms.ObjectName{Scope: mms.ObjectScopeDomain, Domain: "LD0", ItemID: "MMXU1$MX$Hz"}
 }
 
-func standardWork(t *testing.T) func(context.Context, *mms.Client) {
+func standardWork(t testing.TB) func(context.Context, *mms.Client) {
 	return func(ctx context.Context, c *mms.Client) {
 		t.Helper()
 		if _, err := c.Identify(ctx); err != nil {
@@ -41,7 +41,7 @@ func standardWork(t *testing.T) func(context.Context, *mms.Client) {
 	}
 }
 
-func analyze(t *testing.T, b []byte) *Result {
+func analyze(t testing.TB, b []byte) *Result {
 	t.Helper()
 	res, err := Analyze(context.Background(), bytes.NewReader(b), Options{})
 	if err != nil {
@@ -185,7 +185,7 @@ func TestAnalyzeEdges(t *testing.T) {
 }
 
 // informationReport is a session data unit carrying an InformationReport.
-func informationReport(t *testing.T) []byte {
+func informationReport(t testing.TB) []byte {
 	t.Helper()
 	var got []byte
 	srvUnits := recordReport(t)

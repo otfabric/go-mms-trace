@@ -111,16 +111,20 @@ func (a *analyzer) goose(frame []byte, ns int64) {
 	}
 	s.seen[pair] = true
 	if prev := s.last; prev != nil {
+		// The numbers are compared without adding to them, so nothing
+		// wraps at the top of their 32 bits.
 		switch {
+		case p.StNum == prev.StNum:
+			if p.SqNum > prev.SqNum && p.SqNum-prev.SqNum > 1 {
+				s.Issues["sqNum gap"]++
+			}
+		case p.StNum == nextStNum(prev.StNum):
+			s.Changes++
 		case p.StNum < prev.StNum:
 			s.Issues["stNum decreased"]++
-		case p.StNum > prev.StNum+1:
+		default: // higher by more than one
 			s.Issues["stNum jumped"]++
 			s.Changes++
-		case p.StNum == prev.StNum+1:
-			s.Changes++
-		case p.SqNum != prev.SqNum+1 && p.SqNum > prev.SqNum:
-			s.Issues["sqNum gap"]++
 		}
 		if p.ConfRev != prev.ConfRev {
 			s.Issues["confRev changed"]++
@@ -132,6 +136,18 @@ func (a *analyzer) goose(frame []byte, ns int64) {
 	s.ConfRev, s.entries = p.ConfRev, int(p.NumDatSetEntries)
 	pc := p
 	s.last = &pc
+}
+
+// nextStNum is the state number that follows x. After 4294967295 it is 1:
+// IEC 61850-7-2 18.2.3.6 starts StNum at 1, and go-iec61850, which decodes
+// and publishes these messages, rolls over to 1 and takes the same step as
+// the next state when it subscribes (GOOSE.md "State and sequence numbers").
+// From any other number, a step to 1 or to 0 counts as a decrease.
+func nextStNum(x uint32) uint32 {
+	if x == 1<<32-1 {
+		return 1
+	}
+	return x + 1
 }
 
 // sv adds a Sampled Values frame.

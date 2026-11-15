@@ -31,6 +31,7 @@ Run `make` (or `make help`) for the full list of targets.
 - **Pure Go**, `CGO_ENABLED=0`, on every target in the Makefile's `TARGETS`.
 - **Bounded buffers**: every buffer of the pipeline has a cap, and what it drops is counted, reported as a gap, or listed in [LIMITATIONS.md](LIMITATIONS.md) ([ARCHITECTURE.md](ARCHITECTURE.md#2-limits)).
 - **Hostile input:** readers and decoders never panic and never allocate beyond their limits; a new parser comes with a fuzz target.
+- **Tests of state and of limits:** a stage that keeps state between packets has a fuzz target that feeds it sequences of them, and a new limit comes with a test that measures memory or work against it ([TESTING.md](TESTING.md#5-limits-and-budgets)).
 - **No customer captures** in the repository, ever. Public captures come with their source, commit, licence and checksum in `testdata/captures/public/manifest.json` and `NOTICE.md`.
 - **Docs in the same change:** if a document is wrong, fix it in the same pull request.
 

@@ -8,14 +8,14 @@ A pure-Go library and CLI that read **packet captures** (pcap and pcapng, plain 
 
 ## Organisation standards
 
-This repository follows **otfabric/engineering policy 1.6**, profile **protocol-library** (`.otfabric/policy.yaml`); CI runs otfabric-policy v1.5.0. Organisation skills come from the `otfabric` plugin. There are no local exceptions (no `.otfabric/exceptions.yaml`). Where this file and the organisation standards disagree, this file wins for this repository — say so in your report.
+This repository follows **otfabric/engineering policy 1.6**, profile **protocol-library** (`.otfabric/policy.yaml`); CI runs otfabric-policy v1.6.1 (`policy-version` in `.github/workflows/docs.yml`). Organisation skills come from the `otfabric` plugin. There are no local exceptions (no `.otfabric/exceptions.yaml`). Where this file and the organisation standards disagree, this file wins for this repository — say so in your report.
 
 ## Read these, in this order
 
 1. [ARCHITECTURE.md](ARCHITECTURE.md): the pipeline, the limits, how associations and pairing work.
 2. [API.md](API.md): the `trace` package.
 3. [LIMITATIONS.md](LIMITATIONS.md): what is not decoded or not proven.
-4. [TESTING.md](TESTING.md): how captures are generated, fixtures, golden files, fuzzing.
+4. [TESTING.md](TESTING.md): how captures are generated, fixtures, golden files, fuzzing, the tests of the limits, the contract tests.
 5. [INTEROPERABILITY.md](INTEROPERABILITY.md) and [docs/FEATURE-STATUS.md](docs/FEATURE-STATUS.md): the captures of other implementations, the Wireshark comparison, the evidence per feature.
 6. [cmd/mmstracectl/README.md](cmd/mmstracectl/README.md) and its `docs/`: the CLI, its JSON output and exit codes.
 
@@ -26,7 +26,8 @@ This repository follows **otfabric/engineering policy 1.6**, profile **protocol-
 - **Decoding belongs to the protocol libraries.** MMS (session, presentation, ACSE, MMS PDUs) through go-mms `mms.DecodeTSDU`, COTP through go-cotp, GOOSE and SV through go-iec61850. A decoding gap is fixed there, not here.
 - **Reader, link parsing and TCP reassembly are our own**, adapted from go-modbus-trace (`internal/pcapio`, `internal/link`, `internal/flow`); no gopacket.
 - **The only clock is the capture's timestamps.** No `time.Now` in the library.
-- **Untrusted input.** Every length is bounded, the readers, the link parser and `Analyze` are fuzzed, a packet that does not decode is counted, never a panic or an error. The `Result` itself is not bounded.
+- **Untrusted input.** Every length, the input as a whole and the work a packet costs are bounded ([ARCHITECTURE.md](ARCHITECTURE.md#2-limits)). Every stage has a fuzz target, the stages that keep state between packets with sequences of them, and every limit has a test that measures memory or work against it ([TESTING.md](TESTING.md)). A packet that does not decode is counted and the analysis goes on. The `Result` itself grows with the capture: `Options.MaxBytes` is the bound on what it is built from.
+- **A new limit is an option with a default** well above real captures, a named constant, a row in the limits table with the reason for the value, and a test that measures memory or work against it. A default that refuses what the library accepted before goes under "Breaking" in RELEASE.md.
 - **Credentials are never decoded**: only the authentication mechanism.
 - **The CLI is a nested module** (`cmd/mmstracectl`, its own `go.mod`), so the library does not depend on cobra. It pins a released version of the library; a `go.work` (git-ignored) joins them during development.
 

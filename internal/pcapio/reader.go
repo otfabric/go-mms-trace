@@ -5,6 +5,10 @@
 // and its offset in the uncompressed stream, so that a packet can be found
 // again. The reader treats its input as hostile: every length is bounded,
 // and a damaged pcapng block with a plausible length is skipped and counted.
+// The bytes read from one input (after decompression) and the interfaces,
+// sections and option text kept from it are limited, so what the reader does
+// and holds does not grow without bound with what a small input declares or
+// unpacks to.
 //
 // Adapted from go-modbus-trace internal/pcapio.
 package pcapio
@@ -18,6 +22,7 @@ import (
 	"fmt"
 	"hash"
 	"io"
+	"math"
 	"math/bits"
 )
 
@@ -49,13 +54,34 @@ var (
 	// ErrCorrupt reports damage that ends the read; the packets read so
 	// far are valid.
 	ErrCorrupt = errors.New("trace: corrupt trace file")
+	// ErrLimit reports an input that goes on past Options.MaxBytes or has
+	// more sections than Options.MaxSections: the read ends there, and the
+	// packets read so far are valid.
+	ErrLimit = errors.New("trace: capture beyond a limit")
 )
 
 // Default bounds.
 const (
 	DefaultMaxPacket = 256 << 10 // largest captured packet accepted
 	DefaultMaxBlock  = 16 << 20  // largest pcapng block skipped over
-	maxOptions       = 64 << 10  // largest options area that is parsed
+	// DefaultMaxBytes is the number of bytes read from one input, counted
+	// after decompression: 16 GiB. An hour of one Sampled Values stream at
+	// 4800 frames a second is about 2.5 GiB, and capture tools rotate their
+	// files well below this size.
+	DefaultMaxBytes = 16 << 30
+	// DefaultMaxInterfaces is the number of interfaces kept from one input,
+	// over all its sections. Captures have a handful per section; a file
+	// merged from thousands of captures stays below it.
+	DefaultMaxInterfaces = 65536
+	// DefaultMaxSections is the number of pcapng sections read from one
+	// input. A capture has one; files joined end to end have one each
+	// (hourly files of seven years are 61,000).
+	DefaultMaxSections = 65536
+	// DefaultMaxText is the number of bytes of interface and section option
+	// text (names, descriptions, comments) kept from one input: 250 bytes
+	// for each of the interfaces and sections above.
+	DefaultMaxText = 16 << 20
+	maxOptions     = 64 << 10 // largest options area that is parsed
 )
 
 // Packet is one packet record. Data is valid until the next call to Next.
@@ -65,7 +91,7 @@ type Packet struct {
 	Offset   int64  // start of the record or block in the uncompressed stream
 	Iface    uint32 // index into Interfaces (all sections); 0 for classic pcap
 	TimeNS   int64  // capture time, UTC nanoseconds since the Unix epoch
-	HasTime  bool   // false for a pcapng Simple Packet Block
+	HasTime  bool   // false for a pcapng Simple Packet Block, and for a time that does not fit in TimeNS
 	CapLen   uint32
 	OrigLen  uint32
 	LinkType uint16
@@ -116,14 +142,42 @@ type Counters struct {
 	UnknownBlocks  uint64 // block types that are not read (NRB, DSB, custom, ...)
 	ObsoletePacket uint64 // obsolete Packet Blocks (type 2), read like EPB
 	OtherFrames    uint64 // custom and systemd journal blocks: not packets, but Wireshark numbers them as frames
-	BadOptions     uint64 // option areas that did not parse; ignored
+	BadOptions     uint64 // option areas that did not parse (ignored), and text options not kept (Options.MaxText)
+	BadTimestamps  uint64 // packets whose time does not fit in 64-bit nanoseconds: read without a time
 	TruncatedTail  bool   // the last record or block was cut short
 }
 
-// Options bound the reader.
+// Options bound the reader. A field that is zero or negative takes its
+// default.
 type Options struct {
-	MaxPacket int // default DefaultMaxPacket
-	MaxBlock  int // default DefaultMaxBlock
+	MaxPacket     int   // default DefaultMaxPacket
+	MaxBlock      int   // default DefaultMaxBlock
+	MaxBytes      int64 // bytes read after decompression; default DefaultMaxBytes
+	MaxInterfaces int   // default DefaultMaxInterfaces
+	MaxSections   int   // default DefaultMaxSections
+	MaxText       int   // default DefaultMaxText
+}
+
+func (o Options) withDefaults() Options {
+	if o.MaxPacket <= 0 {
+		o.MaxPacket = DefaultMaxPacket
+	}
+	if o.MaxBlock <= 0 {
+		o.MaxBlock = DefaultMaxBlock
+	}
+	if o.MaxBytes <= 0 {
+		o.MaxBytes = DefaultMaxBytes
+	}
+	if o.MaxInterfaces <= 0 {
+		o.MaxInterfaces = DefaultMaxInterfaces
+	}
+	if o.MaxSections <= 0 {
+		o.MaxSections = DefaultMaxSections
+	}
+	if o.MaxText <= 0 {
+		o.MaxText = DefaultMaxText
+	}
+	return o
 }
 
 // Reader reads one trace stream.
@@ -141,6 +195,9 @@ type Reader struct {
 	sections []Section
 	c        Counters
 	opts     Options
+	maxPkt   uint32 // opts.MaxPacket as a capture length
+	maxBlk   uint32 // opts.MaxBlock as a block length
+	text     int    // bytes of option text kept so far
 	buf      []byte
 	hdr      [32]byte
 	done     bool
@@ -159,19 +216,36 @@ func (c *countingReader) Read(p []byte) (int, error) {
 	return n, err
 }
 
+// lengthLimit converts a limit of Options to the 32-bit lengths of a
+// capture. A limit above the largest 32-bit length limits nothing, so it
+// becomes that length instead of wrapping around.
+func lengthLimit(n int) uint32 {
+	if uint64(n) > math.MaxUint32 {
+		return math.MaxUint32
+	}
+	return uint32(n)
+}
+
+// startErr is the error of an input whose format cannot be told: what says
+// how far it got. The end of the input is not a cause to keep; a read error
+// of the input is, so that a caller can tell a failed read from an input
+// that is not a capture.
+func startErr(err error, what string) error {
+	if err == io.EOF {
+		return fmt.Errorf("%w: %s", ErrFormat, what)
+	}
+	return fmt.Errorf("%w: %s: %w", ErrFormat, what, err)
+}
+
 // NewReader detects the format from the first bytes, never from a name.
 func NewReader(r io.Reader, opts Options) (*Reader, error) {
-	if opts.MaxPacket <= 0 {
-		opts.MaxPacket = DefaultMaxPacket
-	}
-	if opts.MaxBlock <= 0 {
-		opts.MaxBlock = DefaultMaxBlock
-	}
+	opts = opts.withDefaults()
 	src := &countingReader{r: r, h: sha256.New()}
-	rd := &Reader{src: src, r: bufio.NewReaderSize(src, 256<<10), opts: opts, buf: make([]byte, 64<<10)}
+	rd := &Reader{src: src, r: bufio.NewReaderSize(src, 256<<10), opts: opts, buf: make([]byte, 64<<10),
+		maxPkt: lengthLimit(opts.MaxPacket), maxBlk: lengthLimit(opts.MaxBlock)}
 	head, err := rd.r.Peek(4)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %d bytes", ErrFormat, len(head))
+		return nil, startErr(err, fmt.Sprintf("%d bytes", len(head)))
 	}
 	if head[0] == 0x1f && head[1] == 0x8b {
 		zr, err := gzip.NewReader(rd.r)
@@ -182,7 +256,7 @@ func NewReader(r io.Reader, opts Options) (*Reader, error) {
 		rd.r = bufio.NewReaderSize(zr, 256<<10)
 		rd.gzip = true
 		if head, err = rd.r.Peek(4); err != nil {
-			return nil, fmt.Errorf("%w: gzip stream with %d bytes", ErrFormat, len(head))
+			return nil, startErr(err, fmt.Sprintf("gzip stream with %d bytes", len(head)))
 		}
 	}
 	switch m := binary.LittleEndian.Uint32(head); m {
@@ -225,30 +299,74 @@ func (rd *Reader) SHA256() [32]byte {
 // InputBytes returns the number of raw input bytes consumed so far.
 func (rd *Reader) InputBytes() int64 { return rd.src.n }
 
+// Offset returns the number of bytes of the uncompressed stream read so
+// far: at most Options.MaxBytes (and the 24 bytes of a pcap file header).
+func (rd *Reader) Offset() int64 { return rd.off }
+
+// read fills b from the uncompressed stream, within Options.MaxBytes. When
+// b ends past the limit, it reads up to the limit and returns ErrLimit if
+// the stream goes on from there; a stream that ends at or before the limit
+// ends as it does without one.
 func (rd *Reader) read(b []byte) error {
-	n, err := io.ReadFull(rd.r, b)
+	room := rd.opts.MaxBytes - rd.off
+	if int64(len(b)) <= room {
+		n, err := io.ReadFull(rd.r, b)
+		rd.off += int64(n)
+		return err
+	}
+	room = max(room, 0)
+	n, err := io.ReadFull(rd.r, b[:room])
 	rd.off += int64(n)
-	return err
+	if err != nil {
+		return err
+	}
+	switch _, err := rd.r.Peek(1); {
+	case err == nil:
+		return ErrLimit
+	case err != io.EOF:
+		return err
+	case n == 0:
+		return io.EOF
+	default:
+		return io.ErrUnexpectedEOF
+	}
 }
 
+// data reads n bytes into the reader's buffer. A buffer that has to grow
+// grows as the bytes arrive, so a length the input does not hold is never
+// allocated.
 func (rd *Reader) data(n int) ([]byte, error) {
-	if cap(rd.buf) < n {
-		rd.buf = make([]byte, n)
+	b := rd.buf[:cap(rd.buf)]
+	if n <= len(b) {
+		return b[:n], rd.read(b[:n])
 	}
-	b := rd.buf[:n]
-	return b, rd.read(b)
+	for have := 0; ; {
+		if err := rd.read(b[have:]); err != nil {
+			return nil, err
+		}
+		if have = len(b); have == n {
+			rd.buf = b
+			return b, nil
+		}
+		grown := make([]byte, min(n, 2*have))
+		copy(grown, b)
+		b = grown
+	}
 }
 
 // end ends the read after err from a read of the input. The end of the
 // input is io.EOF (TruncatedTail when it came inside a record or block,
-// inside says whether the read started inside one); any other error, a
-// failed read or a gzip stream whose checksum does not match, wraps
-// ErrCorrupt.
+// inside says whether the read started inside one); an input that goes on
+// past Options.MaxBytes wraps ErrLimit; any other error, a failed read or a
+// gzip stream whose checksum does not match, wraps ErrCorrupt.
 func (rd *Reader) end(err error, inside bool) error {
 	if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
 		return rd.eof(inside || errors.Is(err, io.ErrUnexpectedEOF))
 	}
 	rd.done = true
+	if errors.Is(err, ErrLimit) {
+		return fmt.Errorf("%w: more than %d bytes", ErrLimit, rd.opts.MaxBytes)
+	}
 	return fmt.Errorf("%w: reading at offset %d: %w", ErrCorrupt, rd.off, err)
 }
 
@@ -268,10 +386,18 @@ func (rd *Reader) eof(truncated bool) error {
 	return io.EOF
 }
 
+// pcapHeader reads the file header of a classic pcap file. Its 24 bytes
+// are read whatever Options.MaxBytes is, so that the limit ends the read at
+// a record and never before the format is known.
 func (rd *Reader) pcapHeader() error {
 	h := rd.hdr[:24]
-	if err := rd.read(h); err != nil {
-		return fmt.Errorf("%w: pcap header cut short", ErrFormat)
+	n, err := io.ReadFull(rd.r, h)
+	rd.off += int64(n)
+	if err != nil {
+		if errors.Is(err, io.ErrUnexpectedEOF) {
+			err = io.EOF // the input ended inside the header: no cause to keep
+		}
+		return startErr(err, "pcap header cut short")
 	}
 	switch binary.LittleEndian.Uint32(h) {
 	case 0xa1b2c3d4:
@@ -309,7 +435,7 @@ func (rd *Reader) Next(p *Packet) error {
 		return rd.end(err, false)
 	}
 	capLen, origLen := rd.bo.Uint32(h[8:]), rd.bo.Uint32(h[12:])
-	if capLen > uint32(rd.opts.MaxPacket) {
+	if capLen > rd.maxPkt {
 		rd.done = true
 		return fmt.Errorf("%w: record at offset %d has a captured length of %d bytes", ErrCorrupt, start, capLen)
 	}
@@ -364,7 +490,7 @@ func (rd *Reader) nextNG(p *Packet) error {
 			return fmt.Errorf("%w: no section header before offset %d", ErrFormat, start)
 		}
 		typ, n := rd.bo.Uint32(h[0:]), rd.bo.Uint32(h[4:])
-		if n < 12 || n%4 != 0 || n > uint32(rd.opts.MaxBlock) {
+		if n < 12 || n%4 != 0 || n > rd.maxBlk {
 			rd.done = true
 			return fmt.Errorf("%w: block at offset %d has a length of %d", ErrCorrupt, start, n)
 		}
@@ -416,9 +542,13 @@ func (rd *Reader) section(start int64, h []byte) error {
 		return fmt.Errorf("%w: section header at offset %d has no byte-order magic", ErrCorrupt, start)
 	}
 	n := bo.Uint32(h[4:])
-	if n < 28 || n%4 != 0 || n > uint32(rd.opts.MaxBlock) {
+	if n < 28 || n%4 != 0 || n > rd.maxBlk {
 		rd.done = true
 		return fmt.Errorf("%w: section header at offset %d has a length of %d", ErrCorrupt, start, n)
+	}
+	if len(rd.sections) >= rd.opts.MaxSections {
+		rd.done = true
+		return fmt.Errorf("%w: section header at offset %d: more than %d sections", ErrLimit, start, rd.opts.MaxSections)
 	}
 	block, err := rd.data(int(n) - 12)
 	if err != nil {
@@ -432,13 +562,13 @@ func (rd *Reader) section(start int64, h []byte) error {
 		rd.options(block[12:len(block)-4], func(code uint16, v []byte) {
 			switch code {
 			case 1:
-				s.Comment = string(v)
+				s.Comment = rd.keep(v)
 			case 2:
-				s.Hardware = string(v)
+				s.Hardware = rd.keep(v)
 			case 3:
-				s.OS = string(v)
+				s.OS = rd.keep(v)
 			case 4:
-				s.Application = string(v)
+				s.Application = rd.keep(v)
 			}
 		})
 	} else {
@@ -448,8 +578,25 @@ func (rd *Reader) section(start int64, h []byte) error {
 	return nil
 }
 
+// keep returns option text as a string to keep, within Options.MaxText over
+// the whole input; text past the limit is left out and counted.
+func (rd *Reader) keep(v []byte) string {
+	if len(v) == 0 {
+		return ""
+	}
+	if len(v) > rd.opts.MaxText-rd.text {
+		rd.c.BadOptions++
+		return ""
+	}
+	rd.text += len(v)
+	return string(v)
+}
+
+// idb adds the interface of an Interface Description Block. A block past
+// Options.MaxInterfaces is skipped and counted like a damaged one, and so are
+// the packets that name its interface, as for any interface never described.
 func (rd *Reader) idb(body []byte) {
-	if len(body) < 8 {
+	if len(body) < 8 || len(rd.ifaces) >= rd.opts.MaxInterfaces {
 		rd.c.SkippedBlocks++
 		return
 	}
@@ -457,9 +604,9 @@ func (rd *Reader) idb(body []byte) {
 	rd.options(body[8:], func(code uint16, v []byte) {
 		switch {
 		case code == 2:
-			f.Name = string(v)
+			f.Name = rd.keep(v)
 		case code == 3:
-			f.Description = string(v)
+			f.Description = rd.keep(v)
 		case code == 9 && len(v) >= 1:
 			if _, ok := unitsPerSecond(v[0]); ok {
 				f.TSResol = v[0]
@@ -467,7 +614,7 @@ func (rd *Reader) idb(body []byte) {
 				rd.c.BadOptions++
 			}
 		case code == 12:
-			f.OS = string(v)
+			f.OS = rd.keep(v)
 		case code == 14 && len(v) >= 8:
 			f.TSOffset = int64(rd.bo.Uint64(v))
 		}
@@ -489,15 +636,21 @@ func (rd *Reader) epb(typ uint32, start int64, body []byte, p *Packet) bool {
 	}
 	capLen := rd.bo.Uint32(body[12:])
 	g := rd.secBase + int(id) // id < len: int(id) stays positive on 32-bit platforms
-	if id >= uint32(len(rd.ifaces)) || g >= len(rd.ifaces) || capLen > uint32(rd.opts.MaxPacket) || int(capLen) > len(body)-20 {
+	if id >= uint32(len(rd.ifaces)) || g >= len(rd.ifaces) || capLen > rd.maxPkt || int(capLen) > len(body)-20 {
 		rd.c.SkippedBlocks++
 		return false
 	}
 	f := &rd.ifaces[g]
 	ts := uint64(rd.bo.Uint32(body[4:]))<<32 | uint64(rd.bo.Uint32(body[8:]))
+	// A time that does not fit in 64-bit nanoseconds leaves the packet
+	// without one, and is counted.
+	ns, ok := toNS(ts, f.TSResol, f.TSOffset)
+	if !ok {
+		rd.c.BadTimestamps++
+	}
 	rd.frame++
 	f.Packets++
-	*p = Packet{Frame: rd.frame, Offset: start, Iface: uint32(g), TimeNS: toNS(ts, f.TSResol, f.TSOffset), HasTime: true,
+	*p = Packet{Frame: rd.frame, Offset: start, Iface: uint32(g), TimeNS: ns, HasTime: ok,
 		CapLen: capLen, OrigLen: max(rd.bo.Uint32(body[16:]), capLen), LinkType: f.LinkType, Data: body[20 : 20+capLen]}
 	return true
 }
@@ -514,7 +667,7 @@ func (rd *Reader) spb(start int64, body []byte, p *Packet) bool {
 	if f.SnapLen != 0 {
 		capLen = min(capLen, f.SnapLen)
 	}
-	if capLen > uint32(rd.opts.MaxPacket) {
+	if capLen > rd.maxPkt {
 		rd.c.SkippedBlocks++
 		return false
 	}
@@ -539,7 +692,8 @@ func (rd *Reader) isb(body []byte) {
 	}
 	f := &rd.ifaces[g]
 	ts := uint64(rd.bo.Uint32(body[4:]))<<32 | uint64(rd.bo.Uint32(body[8:]))
-	s := &InterfaceStats{TimeNS: toNS(ts, f.TSResol, f.TSOffset)}
+	ns, _ := toNS(ts, f.TSResol, f.TSOffset) // 0 when it does not fit
+	s := &InterfaceStats{TimeNS: ns}
 	rd.options(body[12:], func(code uint16, v []byte) {
 		if len(v) < 8 {
 			return
@@ -601,15 +755,50 @@ func unitsPerSecond(r byte) (uint64, bool) {
 	return u, true
 }
 
-// toNS converts a pcapng timestamp in if_tsresol units to UTC nanoseconds,
-// exactly (128-bit intermediate).
-func toNS(ts uint64, resol byte, offset int64) int64 {
+// toNS converts a pcapng timestamp in if_tsresol units, with the interface's
+// if_tsoffset in seconds, to UTC nanoseconds. The sub-second part is exact
+// (128-bit intermediate). It reports false when the time does not fit in 64
+// bits of nanoseconds (it lies before 1677-09-21 or after 2262-04-11):
+// nothing wraps around.
+func toNS(ts uint64, resol byte, offset int64) (int64, bool) {
+	const second = 1_000_000_000
 	u, ok := unitsPerSecond(resol)
 	if !ok {
 		u = 1e6
 	}
 	sec, frac := ts/u, ts%u
-	hi, lo := bits.Mul64(frac, 1e9)
-	ns, _ := bits.Div64(hi, lo, u)
-	return (int64(sec)+offset)*1e9 + int64(ns)
+	hi, lo := bits.Mul64(frac, second)
+	ns, _ := bits.Div64(hi, lo, u) // below one second
+	// sec + offset, a 64-bit unsigned count plus a signed one, without
+	// leaving the range of either: the sum is whole seconds after 1970, or
+	// back seconds before it.
+	var whole, back uint64
+	if offset >= 0 {
+		whole = sec + uint64(offset)
+		if whole < sec {
+			return 0, false
+		}
+	} else if neg := uint64(-(offset + 1)) + 1; sec >= neg { // neg is -offset, also for the smallest int64
+		whole = sec - neg
+	} else {
+		back = neg - sec
+	}
+	if back == 0 {
+		if whole > math.MaxInt64/second {
+			return 0, false
+		}
+		v := whole*second + ns
+		if v > math.MaxInt64 {
+			return 0, false
+		}
+		return int64(v), true
+	}
+	if back > math.MaxInt64/second+1 {
+		return 0, false
+	}
+	v := back*second - ns // nanoseconds before 1970: at most 2^63
+	if v > 1<<63 {
+		return 0, false
+	}
+	return -int64(v), true // also for 2^63, the smallest int64
 }

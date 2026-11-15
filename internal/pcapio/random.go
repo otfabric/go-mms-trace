@@ -152,7 +152,7 @@ func (ix *Index) ReadAt(r io.ReaderAt, off int64) (Packet, error) {
 	}
 	// A copy of the interfaces: the reader counts packets in them, and
 	// ReadAt must be safe for concurrent use.
-	rd := &Reader{bo: sec.bo, ifaces: append([]Interface(nil), ix.ifaces...), secBase: sec.base, opts: Options{MaxPacket: DefaultMaxBlock}}
+	rd := &Reader{bo: sec.bo, ifaces: append([]Interface(nil), ix.ifaces...), secBase: sec.base, maxPkt: DefaultMaxBlock}
 	var p Packet
 	ok := false
 	switch typ {

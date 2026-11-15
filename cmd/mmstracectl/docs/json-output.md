@@ -6,16 +6,18 @@
 {"schema_version": 1, "files": [ ... ]}
 ```
 
-with one object per capture, in argument order. Each starts with `file` (the argument as given, `-` for standard input) and, for a damaged capture, `error` (what ended the read; the rest is what was read before it). Field names are snake_case and stable; a change is called out in the release notes. Times are RFC 3339 in UTC with up to nine fractional digits (trailing zeros dropped, as Go's `time.RFC3339Nano` writes them), and absent when there is no time. Endpoints are `ip:port` (IPv6 in brackets).
+with one object per capture, in argument order. Each starts with `file` (the argument as given, `-` for standard input) and, for a damaged capture and for one that goes on past `--max-bytes`, `error` (what ended the read; the rest is what was read before it). Field names are snake_case and stable; a change is called out in the release notes. Times are RFC 3339 in UTC with up to nine fractional digits (trailing zeros dropped, as Go's `time.RFC3339Nano` writes them), and absent when there is no time. Endpoints are `ip:port` (IPv6 in brackets).
+
+Strings are exact. A control character in a name of the capture is escaped (`\u001b`; DEL and the C1 set as `\u007f` to `\u009f`), so the document holds no control character other than its own line ends; a byte that is not UTF-8 is replaced by U+FFFD.
 
 ## `info`
 
 ```json
 {
-  "file": "substation.pcap", "format": "pcap", "gzip": false, "sha256": "...", "input_bytes": 6768,
+  "file": "substation.pcap", "format": "pcap", "gzip": false, "sha256": "...", "input_bytes": 6768, "uncompressed_bytes": 6768,
   "packets": 61, "interfaces": 1, "links": ["ethernet"],
   "first": "2026-11-09T12:00:00.001Z", "last": "2026-11-09T12:00:00.061Z",
-  "truncated_tail": false, "skipped_blocks": 0,
+  "truncated_tail": false, "skipped_blocks": 0, "bad_timestamps": 0,
   "associations": 4, "transactions": 9,
   "statuses": {"error": 1, "ok": 5, "orphan": 1, "pending": 1, "unanswered": 1},
   "reports": 1, "goose_streams": 1, "sv_streams": 1,
@@ -25,7 +27,7 @@ with one object per capture, in argument order. Each starts with `file` (the arg
 }
 ```
 
-`statuses` and `services` count the transactions (a status with no transaction is absent; `services` has `""` for orphan errors and rejects); `unsupported` counts packets without a usable TCP segment by reason, and `other_tcp` segments on other ports. `links`, `statuses`, `services` and `unsupported` are present even when empty. The counters are explained in [ERRORS.md](../../../ERRORS.md).
+`input_bytes` is the size of the file as read, `uncompressed_bytes` the size of the capture in it: the same for a plain file, the bytes after decompression for a gzip file, and at most `--max-bytes`. `skipped_blocks` counts pcapng blocks that were skipped, `bad_timestamps` pcapng packets whose time does not fit in 64 bits of nanoseconds (they are used without a time). `statuses` and `services` count the transactions (a status with no transaction is absent; `services` has `""` for orphan errors and rejects); `unsupported` counts packets without a usable TCP segment by reason, and `other_tcp` segments on other ports. `links`, `statuses`, `services` and `unsupported` are present even when empty. The counters are explained in [ERRORS.md](../../../ERRORS.md).
 
 ## `associations`
 
@@ -51,7 +53,7 @@ with one object per capture, in argument order. Each starts with `file` (the arg
 }]}
 ```
 
-In time order (capture order for equal times): `time` is the request's, or the response's when the request was not captured; absent without either. `service` is the request's, or the response's for an orphan (`""` when it names none). `status` is `ok`, `error`, `reject`, `unanswered`, `orphan` or `pending`. `latency_ms` is a number of milliseconds with fractions, `null` without both times. `request_frame` and `response_frame` are packet numbers from 1, absent when not captured. `error` (class and code of a confirmed error) and `reject` (`type` and `reason` of a reject PDU) are present only then. `object` is described in the [README](../README.md#output).
+In time order (capture order for equal times): `time` is the request's, or the response's when the request was not captured; absent without either. `service` is the request's, or the response's for an orphan (`""` when it names none). `status` is `ok`, `error`, `reject`, `uncertain`, `unanswered`, `orphan` or `pending`; `uncertain` is a response paired with the request of its invoke ID while the capture lost something between the two ([API.md](../../../API.md#transaction)). `latency_ms` is a number of milliseconds with fractions, `null` without both times. `request_frame` and `response_frame` are packet numbers from 1, absent when not captured. `error` (class and code of a confirmed error) and `reject` (`type` and `reason` of a reject PDU) are present only then. `object` is described in the [README](../README.md#output).
 
 ## `reports`
 

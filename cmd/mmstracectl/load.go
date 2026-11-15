@@ -17,8 +17,8 @@ import (
 type analysis struct {
 	name string
 	res  *trace.Result
-	// err is the damage that ended reading early (wraps trace.ErrCorrupt);
-	// res holds what was read before it.
+	// err is what ended reading early: damage (wraps trace.ErrCorrupt) or
+	// a limit (wraps trace.ErrLimit); res holds what was read before it.
 	err error
 }
 
@@ -26,11 +26,13 @@ type analysis struct {
 type analysisFlags struct {
 	ports     []uint
 	maxPacket int
+	maxBytes  int64
 }
 
 func (f *analysisFlags) add(c *cobra.Command) {
 	c.Flags().UintSliceVar(&f.ports, "port", []uint{102}, "TCP ports of MMS servers")
 	c.Flags().IntVar(&f.maxPacket, "max-packet", 0, "largest packet record read, bytes (0: the reader's default, 256 KiB)")
+	c.Flags().Int64Var(&f.maxBytes, "max-bytes", 0, "most bytes of a capture read, counted after decompression (0: the library's default, 16 GiB)")
 }
 
 func (f *analysisFlags) options() (trace.Options, error) {
@@ -47,13 +49,16 @@ func (f *analysisFlags) options() (trace.Options, error) {
 	if f.maxPacket < 0 {
 		return o, usageErr("--max-packet %d: negative", f.maxPacket)
 	}
-	o.MaxPacket = f.maxPacket
+	if f.maxBytes < 0 {
+		return o, usageErr("--max-bytes %d: negative", f.maxBytes)
+	}
+	o.MaxPacket, o.MaxBytes = f.maxPacket, f.maxBytes
 	return o, nil
 }
 
 // load analyses every capture. A capture that cannot be opened or is not a
-// capture fails the command before anything is written; a damaged one is
-// kept with what was read and its error.
+// capture fails the command before anything is written; a damaged one, and
+// one that goes on past a limit, is kept with what was read and its error.
 func load(ctx context.Context, e *env, names []string, f *analysisFlags) ([]analysis, error) {
 	o, err := f.options()
 	if err != nil {
@@ -93,7 +98,7 @@ func analyse(ctx context.Context, e *env, name string, o trace.Options) (analysi
 	switch {
 	case err == nil:
 		return analysis{name: name, res: res}, nil
-	case errors.Is(err, trace.ErrCorrupt) && res != nil:
+	case (errors.Is(err, trace.ErrCorrupt) || errors.Is(err, trace.ErrLimit)) && res != nil:
 		return analysis{name: name, res: res, err: err}, nil
 	case ctx.Err() != nil:
 		return analysis{}, err
@@ -102,8 +107,8 @@ func analyse(ctx context.Context, e *env, name string, o trace.Options) (analysi
 	}
 }
 
-// damaged returns the error of the first damaged capture, as an input
-// error naming the file, after the output was written.
+// damaged returns the error of the first capture that was not read to its
+// end, as an input error naming the file, after the output was written.
 func damaged(as []analysis) error {
 	for _, a := range as {
 		if a.err != nil {

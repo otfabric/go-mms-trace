@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"text/tabwriter"
+	"unicode/utf8"
 
 	"github.com/spf13/cobra"
 
@@ -19,7 +21,7 @@ import (
 )
 
 // statuses are the transaction statuses, in the order they are listed.
-var statuses = []string{trace.StatusOK, trace.StatusError, trace.StatusReject, trace.StatusUnanswered,
+var statuses = []string{trace.StatusOK, trace.StatusError, trace.StatusReject, trace.StatusUncertain, trace.StatusUnanswered,
 	trace.StatusOrphan, trace.StatusPending}
 
 // writer is how a command writes its result in one format.
@@ -74,13 +76,13 @@ func writeInfo(w io.Writer, as []analysis, format string) error {
 		if i > 0 {
 			_, _ = fmt.Fprintln(tw)
 		}
-		gz := ""
+		size := fmt.Sprintf("%d bytes", x.InputBytes)
 		if x.Gzip {
-			gz = ", gzip"
+			size = fmt.Sprintf("gzip, %d bytes (%d uncompressed)", x.InputBytes, x.UncompressedBytes)
 		}
 		lines := [][2]string{
 			{"file", x.File},
-			{"format", fmt.Sprintf("%s%s, %d bytes, %d packets", x.Format, gz, x.InputBytes, x.Packets)},
+			{"format", fmt.Sprintf("%s, %s, %d packets", x.Format, size, x.Packets)},
 			{"interfaces", fmt.Sprintf("%d (%s)", x.Interfaces, strings.Join(x.Links, ", "))},
 			{"sha256", x.SHA256},
 			{"first", textTime(a.res.File.FirstNS)},
@@ -101,6 +103,9 @@ func writeInfo(w io.Writer, as []analysis, format string) error {
 		}
 		if x.SkippedBlocks > 0 {
 			lines = append(lines, [2]string{"skipped blocks", strconv.FormatUint(x.SkippedBlocks, 10)})
+		}
+		if x.BadTimestamps > 0 {
+			lines = append(lines, [2]string{"bad timestamps", strconv.FormatUint(x.BadTimestamps, 10)})
 		}
 		if x.Error != "" {
 			lines = append(lines, [2]string{"error", x.Error})
@@ -127,13 +132,14 @@ func statusText(m map[string]int) string {
 }
 
 // countText writes a count map as "key=n, key=n" in key order, or "-".
+// The keys are written as printable text.
 func countText[N int | uint64](m map[string]N) string {
 	if len(m) == 0 {
 		return "-"
 	}
 	var parts []string
 	for _, k := range slices.Sorted(maps.Keys(m)) {
-		parts = append(parts, fmt.Sprintf("%s=%d", k, m[k]))
+		parts = append(parts, fmt.Sprintf("%s=%d", printable(k), m[k]))
 	}
 	return strings.Join(parts, ", ")
 }
@@ -170,8 +176,8 @@ func writeAssociations(w io.Writer, as []analysis, format string) error {
 			if x.Accepted != nil {
 				acc = strconv.FormatBool(*x.Accepted)
 			}
-			_, _ = fmt.Fprintf(tw, "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%s\t%s\n", x.ID, x.Client, x.Server, x.Open,
-				dash(x.Close), acc, dash(x.Authentication), x.Transactions, x.Reports, x.Unanswered, x.Gaps,
+			_, _ = fmt.Fprintf(tw, "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%s\t%s\n", x.ID, x.Client, x.Server, printable(x.Open),
+				dash(printable(x.Close)), acc, dash(printable(x.Authentication)), x.Transactions, x.Reports, x.Unanswered, x.Gaps,
 				textTime(s.FirstNS), textTime(s.LastNS))
 		}
 	})
@@ -213,8 +219,8 @@ func transactionsCommand(e *env) *cobra.Command {
 	c, _ := captureCommand(e, "transactions", "List the confirmed services in time order",
 		`List the confirmed services (transactions) in time order: the time of the
 request (of the response when the request was not captured), association,
-invoke ID, service, status (ok, error, reject, unanswered, orphan, pending),
-latency in milliseconds and a short summary of the object.`,
+invoke ID, service, status (ok, error, reject, uncertain, unanswered, orphan,
+pending), latency in milliseconds and a short summary of the object.`,
 		[]string{formatText, formatJSON, formatCSV}, func(w io.Writer, as []analysis, format string) error {
 			return writeTransactions(w, as, format, &sel)
 		})
@@ -259,7 +265,7 @@ func writeTransactions(w io.Writer, as []analysis, format string, sel *transacti
 					ec, eco = strconv.Itoa(x.Error.Class), strconv.Itoa(x.Error.Code)
 				}
 				_ = cw.Write([]string{a.name, csvTime(transactionTime(t)), strconv.Itoa(x.Association), strconv.FormatUint(uint64(x.InvokeID), 10),
-					x.Service, x.Status, latency(x.LatencyMS, ""), x.Object, frame(x.RequestFrame), frame(x.ResponseFrame), ec, eco})
+					printable(x.Service), x.Status, latency(x.LatencyMS, ""), printable(x.Object), frame(x.RequestFrame), frame(x.ResponseFrame), ec, eco})
 			}
 		}
 		cw.Flush()
@@ -273,7 +279,7 @@ func writeTransactions(w io.Writer, as []analysis, format string, sel *transacti
 			}
 			x := toTransaction(t)
 			_, _ = fmt.Fprintf(tw, "%s\t%d\t%d\t%s\t%s\t%s\t%s\n", textTime(transactionTime(t)), x.Association, x.InvokeID,
-				dash(x.Service), x.Status, latency(x.LatencyMS, "-"), dash(x.Object))
+				dash(printable(x.Service)), x.Status, latency(x.LatencyMS, "-"), dash(printable(x.Object)))
 		}
 	})
 }
@@ -305,8 +311,8 @@ func writeReports(w io.Writer, as []analysis, format string) error {
 		for _, a := range as {
 			for _, r := range a.res.Reports {
 				x := toReport(r)
-				_ = cw.Write([]string{a.name, csvTime(r.TimeNS), strconv.Itoa(x.Association), frame(x.Frame), x.ListName,
-					strings.Join(x.Variables, " "), strconv.Itoa(x.Values)})
+				_ = cw.Write([]string{a.name, csvTime(r.TimeNS), strconv.Itoa(x.Association), frame(x.Frame), printable(x.ListName),
+					printable(strings.Join(x.Variables, " ")), strconv.Itoa(x.Values)})
 			}
 		}
 		cw.Flush()
@@ -316,7 +322,7 @@ func writeReports(w io.Writer, as []analysis, format string) error {
 		_, _ = fmt.Fprintln(tw, "TIME\tASSOC\tNAME\tVALUES")
 		for _, r := range a.res.Reports {
 			x := toReport(r)
-			_, _ = fmt.Fprintf(tw, "%s\t%d\t%s\t%d\n", textTime(r.TimeNS), x.Association, dash(reportName(x)), x.Values)
+			_, _ = fmt.Fprintf(tw, "%s\t%d\t%s\t%d\n", textTime(r.TimeNS), x.Association, dash(printable(reportName(x))), x.Values)
 		}
 	})
 }
@@ -350,7 +356,7 @@ func writeGoose(w io.Writer, as []analysis, format string) error {
 		for _, a := range as {
 			for _, g := range a.res.GOOSE {
 				x := toGoose(g)
-				_ = cw.Write([]string{a.name, x.Src, x.Dst, appID(x.AppID), strconv.Itoa(x.VLAN), x.GocbRef, x.DatSet, x.GoID,
+				_ = cw.Write([]string{a.name, x.Src, x.Dst, appID(x.AppID), strconv.Itoa(x.VLAN), printable(x.GocbRef), printable(x.DatSet), printable(x.GoID),
 					strconv.FormatUint(uint64(x.ConfRev), 10), strconv.Itoa(x.Messages), strconv.Itoa(x.Changes),
 					strconv.Itoa(x.Simulation), strconv.Itoa(x.NdsCom), strconv.Itoa(x.MaxPerSecond), csvTime(g.FirstNS), csvTime(g.LastNS), countText(x.Issues)})
 			}
@@ -362,7 +368,7 @@ func writeGoose(w io.Writer, as []analysis, format string) error {
 		_, _ = fmt.Fprintln(tw, "SRC\tAPPID\tVLAN\tGOCBREF\tMESSAGES\tCHANGES\tMAX/S\tISSUES")
 		for _, g := range a.res.GOOSE {
 			x := toGoose(g)
-			_, _ = fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%d\t%d\t%d\t%s\n", x.Src, appID(x.AppID), vlan(x.VLAN), x.GocbRef,
+			_, _ = fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%d\t%d\t%d\t%s\n", x.Src, appID(x.AppID), vlan(x.VLAN), printable(x.GocbRef),
 				x.Messages, x.Changes, x.MaxPerSecond, countText(x.Issues))
 		}
 	})
@@ -396,7 +402,7 @@ func writeSV(w io.Writer, as []analysis, format string) error {
 		for _, a := range as {
 			for _, s := range a.res.SV {
 				x := toSV(s)
-				_ = cw.Write([]string{a.name, x.Src, x.Dst, appID(x.AppID), strconv.Itoa(x.VLAN), x.SvID, x.DatSet,
+				_ = cw.Write([]string{a.name, x.Src, x.Dst, appID(x.AppID), strconv.Itoa(x.VLAN), printable(x.SvID), printable(x.DatSet),
 					strconv.FormatUint(uint64(x.ConfRev), 10), strconv.Itoa(x.Messages), strconv.Itoa(x.ASDUs),
 					strconv.Itoa(x.Lost), strconv.Itoa(x.Repeated), strconv.Itoa(x.Wrap), csvTime(s.FirstNS), csvTime(s.LastNS), countText(x.Issues)})
 			}
@@ -408,7 +414,7 @@ func writeSV(w io.Writer, as []analysis, format string) error {
 		_, _ = fmt.Fprintln(tw, "SRC\tAPPID\tVLAN\tSVID\tMESSAGES\tASDUS\tLOST\tREPEATED\tWRAP\tISSUES")
 		for _, s := range a.res.SV {
 			x := toSV(s)
-			_, _ = fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%s\n", x.Src, appID(x.AppID), vlan(x.VLAN), x.SvID,
+			_, _ = fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%s\n", x.Src, appID(x.AppID), vlan(x.VLAN), printable(x.SvID),
 				x.Messages, x.ASDUs, x.Lost, x.Repeated, x.Wrap, countText(x.Issues))
 		}
 	})
@@ -433,12 +439,35 @@ func eachFile(w io.Writer, as []analysis, table func(io.Writer, analysis)) error
 	return nil
 }
 
-// writeJSON writes one indented JSON document.
+// writeJSON writes one indented JSON document. encoding/json escapes the C0
+// control characters of a string; DEL and the C1 set are escaped here, as
+// \u007f to \u009f, so that no control character of a capture is written
+// as it is in any format. The document means the same.
 func writeJSON(w io.Writer, v any) error {
-	enc := json.NewEncoder(w)
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
 	enc.SetEscapeHTML(false)
 	enc.SetIndent("", "  ")
-	return enc.Encode(v)
+	if err := enc.Encode(v); err != nil {
+		return err
+	}
+	b := buf.Bytes()
+	if bytes.IndexByte(b, 0x7f) < 0 && bytes.IndexByte(b, 0xc2) < 0 { // neither DEL nor the first byte of a C1 character
+		_, err := w.Write(b)
+		return err
+	}
+	var out bytes.Buffer
+	for len(b) > 0 {
+		r, n := utf8.DecodeRune(b)
+		if r >= 0x7f && r <= 0x9f {
+			fmt.Fprintf(&out, `\u%04x`, r)
+		} else {
+			out.Write(b[:n])
+		}
+		b = b[n:]
+	}
+	_, err := w.Write(out.Bytes())
+	return err
 }
 
 // chain runs the pre-run hooks in order.

@@ -12,7 +12,7 @@ import (
 )
 
 // inputError marks an error in reading a capture: a file that cannot be
-// opened, is not a capture or is damaged.
+// opened, is not a capture, is damaged or goes on past a limit.
 type inputError struct{ err error }
 
 func (e *inputError) Error() string { return e.err.Error() }
@@ -59,7 +59,7 @@ func exitCode(ctx context.Context, err error) int {
 		return exitUsage
 	case errors.As(err, &out):
 		return exitInternal
-	case errors.As(err, &in), errors.Is(err, trace.ErrCorrupt), errors.Is(err, trace.ErrFormat):
+	case errors.As(err, &in), errors.Is(err, trace.ErrCorrupt), errors.Is(err, trace.ErrFormat), errors.Is(err, trace.ErrLimit):
 		return exitInvalidInput
 	default:
 		return exitInternal

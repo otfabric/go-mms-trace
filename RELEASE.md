@@ -1,5 +1,22 @@
 # go-mms-trace Releases
 
+## v0.4.1
+
+**Date:** 2026-11-15
+**Previous release:** v0.4.0
+
+`mmstracectl` is built on go-mms-trace v0.4.0 (was v0.3.5), with go-mms v1.11.0 and go-iec61850 v1.23.0. The library is unchanged from v0.4.0.
+
+### mmstracectl
+
+- **Names of a capture are written as printable text.** In text and CSV output every control character of a name (the C0 set, DEL, the C1 set) and every byte that is not UTF-8 is written as `\xNN`; JSON output escapes DEL and the C1 set as `\u007f` to `\u009f` besides what it escaped before. A name is one cell of one row in every format. Output without such characters is the same as before; to get a name's exact value, read JSON. A CSV cell that starts with `=`, `+`, `-` or `@` is written as it is.
+- `--max-bytes` (`MMSTRACECTL_MAX_BYTES`): the most bytes of a capture read, after decompression; 0 is the library's default of 16 GiB. A capture past the limit is printed up to it, then the command exits 3, like a damaged one.
+- `--status uncertain`, and `uncertain` in the listings and counts.
+- `info`: `uncompressed_bytes` and `bad_timestamps` in JSON; in text the size line of a gzip capture reads `gzip, N bytes (M uncompressed)`, and a `bad timestamps` line appears when there are any.
+- Everything the library changed in v0.4.0 now applies to the command: the pairing and framing across capture loss, the limits with their defaults, and the cause kept in read errors (see v0.4.0 below).
+
+---
+
 ## v0.4.0
 
 **Date:** 2026-11-14

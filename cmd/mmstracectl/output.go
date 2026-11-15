@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	mms "github.com/otfabric/go-mms"
 
@@ -47,26 +48,28 @@ func header(a analysis) fileHeader {
 // infoJSON is one capture in the info document.
 type infoJSON struct {
 	fileHeader
-	Format        string            `json:"format"`
-	Gzip          bool              `json:"gzip"`
-	SHA256        string            `json:"sha256"`
-	InputBytes    int64             `json:"input_bytes"`
-	Packets       uint64            `json:"packets"`
-	Interfaces    int               `json:"interfaces"`
-	Links         []string          `json:"links"`
-	First         string            `json:"first,omitempty"`
-	Last          string            `json:"last,omitempty"`
-	TruncatedTail bool              `json:"truncated_tail"`
-	SkippedBlocks uint64            `json:"skipped_blocks"`
-	Associations  int               `json:"associations"`
-	Transactions  int               `json:"transactions"`
-	Statuses      map[string]int    `json:"statuses"`
-	Reports       int               `json:"reports"`
-	GooseStreams  int               `json:"goose_streams"`
-	SVStreams     int               `json:"sv_streams"`
-	Counters      countersJSON      `json:"counters"`
-	Services      map[string]int    `json:"services"`
-	Unsupported   map[string]uint64 `json:"unsupported"`
+	Format            string            `json:"format"`
+	Gzip              bool              `json:"gzip"`
+	SHA256            string            `json:"sha256"`
+	InputBytes        int64             `json:"input_bytes"`
+	UncompressedBytes int64             `json:"uncompressed_bytes"`
+	Packets           uint64            `json:"packets"`
+	Interfaces        int               `json:"interfaces"`
+	Links             []string          `json:"links"`
+	First             string            `json:"first,omitempty"`
+	Last              string            `json:"last,omitempty"`
+	TruncatedTail     bool              `json:"truncated_tail"`
+	SkippedBlocks     uint64            `json:"skipped_blocks"`
+	BadTimestamps     uint64            `json:"bad_timestamps"`
+	Associations      int               `json:"associations"`
+	Transactions      int               `json:"transactions"`
+	Statuses          map[string]int    `json:"statuses"`
+	Reports           int               `json:"reports"`
+	GooseStreams      int               `json:"goose_streams"`
+	SVStreams         int               `json:"sv_streams"`
+	Counters          countersJSON      `json:"counters"`
+	Services          map[string]int    `json:"services"`
+	Unsupported       map[string]uint64 `json:"unsupported"`
 }
 
 type countersJSON struct {
@@ -82,9 +85,10 @@ type countersJSON struct {
 func toInfo(a analysis) infoJSON {
 	r := a.res
 	f := r.File
-	out := infoJSON{fileHeader: header(a), Format: f.Format, Gzip: f.Gzip, SHA256: f.SHA256, InputBytes: f.InputBytes,
+	out := infoJSON{fileHeader: header(a), Format: f.Format, Gzip: f.Gzip, SHA256: f.SHA256,
+		InputBytes: f.InputBytes, UncompressedBytes: f.UncompressedBytes,
 		Packets: f.Packets, Interfaces: f.Interfaces, Links: f.Links, First: jsonTime(f.FirstNS), Last: jsonTime(f.LastNS),
-		TruncatedTail: f.TruncatedTail, SkippedBlocks: f.SkippedBlocks,
+		TruncatedTail: f.TruncatedTail, SkippedBlocks: f.SkippedBlocks, BadTimestamps: f.BadTimestamps,
 		Associations: len(r.Associations), Transactions: len(r.Transactions), Statuses: map[string]int{},
 		Reports: len(r.Reports), GooseStreams: len(r.GOOSE), SVStreams: len(r.SV), Services: map[string]int{},
 		Counters: countersJSON{TPKTResync: r.Counters.TPKTResync, COTPErrors: r.Counters.COTPErrors, TSDUErrors: r.Counters.TSDUErrors,
@@ -358,6 +362,35 @@ func object(t *trace.Transaction) string {
 		return strings.Join([]string{r.Identify.Vendor, r.Identify.Model, r.Identify.Revision}, " ")
 	}
 	return ""
+}
+
+// printable returns a string decoded from a capture as text and CSV
+// output write it: every control character (the C0 set, DEL and the C1
+// set) and every byte that is not UTF-8 is written as \xNN, so that a name
+// is always one cell of one row. Everything else, a backslash included, is
+// written as it is. JSON output has its own escaping and does not use this.
+func printable(s string) string {
+	clean := true
+	for i := 0; i < len(s) && clean; i++ {
+		clean = s[i] >= 0x20 && s[i] < 0x7f
+	}
+	if clean {
+		return s
+	}
+	var b strings.Builder
+	for i := 0; i < len(s); {
+		r, n := utf8.DecodeRuneInString(s[i:])
+		switch {
+		case r == utf8.RuneError && n == 1:
+			fmt.Fprintf(&b, `\x%02x`, s[i])
+		case r < 0x20 || (r >= 0x7f && r <= 0x9f):
+			fmt.Fprintf(&b, `\x%02x`, r)
+		default:
+			b.WriteString(s[i : i+n])
+		}
+		i += n
+	}
+	return b.String()
 }
 
 // jsonTime is a capture time as RFC 3339 with nanoseconds, UTC, or "" for

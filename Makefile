@@ -44,7 +44,7 @@ FUZZ_TARGETS = ./internal/pcapio:FuzzPcapReader ./internal/pcapio:FuzzPcapngRead
 	./internal/link:FuzzDefragSequence ./internal/flow:FuzzSegments ./trace:FuzzFramer ./trace:FuzzAnalyze
 
 # docsync release of docs-check.
-DOCSYNC_VERSION := v0.3.1
+DOCSYNC_VERSION := v0.4.0
 
 all: check build ## Run checks and build bin/mmstracectl
 
